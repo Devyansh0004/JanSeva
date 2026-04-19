@@ -6,6 +6,9 @@ import About from './pages/About'
 import Statistics from './pages/Statistics'
 import Services from './pages/Services'
 import Contact from './pages/Contact'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import Dashboard from './pages/Dashboard'
 
 function App() {
   return (
@@ -19,6 +22,9 @@ function App() {
             <Route path="/statistics" element={<Statistics />} />
             <Route path="/services" element={<Services />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </main>
         <Footer />
