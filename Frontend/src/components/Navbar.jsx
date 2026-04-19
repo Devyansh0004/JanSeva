@@ -28,6 +28,17 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
+  
+  // Basic auth state check
+  const token = localStorage.getItem('janseva_token')
+  const userStr = localStorage.getItem('janseva_user')
+  const user = userStr ? JSON.parse(userStr) : null
+
+  const handleLogout = () => {
+    localStorage.removeItem('janseva_token')
+    localStorage.removeItem('janseva_user')
+    window.location.href = '/'
+  }
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 16)
@@ -72,22 +83,50 @@ export default function Navbar() {
                 </Link>
               )
             })}
+            
+            {/* Conditional Dashboard Link */}
+            {token && (
+              <Link
+                to="/dashboard"
+                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                  location.pathname === '/dashboard'
+                    ? 'text-green-600 bg-green-50'
+                    : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
+                }`}
+              >
+                Dashboard
+              </Link>
+            )}
           </div>
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3 flex-shrink-0">
-            <Link
-              to="/contact"
-              className="text-green-600 border border-green-300 hover:border-green-500 hover:bg-green-50 font-semibold text-sm px-5 py-2 rounded-lg transition-all duration-200"
-            >
-              Login
-            </Link>
-            <Link
-              to="/contact"
-              className="btn-primary text-sm px-5 py-2"
-            >
-              Sign Up
-            </Link>
+            {token ? (
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium text-gray-700">Hi, {user?.name?.split(' ')[0]}</span>
+                <button
+                  onClick={handleLogout}
+                  className="text-red-500 border border-red-200 hover:border-red-500 hover:bg-red-50 font-semibold text-sm px-5 py-2 rounded-lg transition-all duration-200"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-green-600 border border-green-300 hover:border-green-500 hover:bg-green-50 font-semibold text-sm px-5 py-2 rounded-lg transition-all duration-200"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="btn-primary text-sm px-5 py-2"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Hamburger */}
@@ -124,19 +163,44 @@ export default function Navbar() {
               </Link>
             )
           })}
+          
+          {/* Conditional Dashboard Link Mobile */}
+          {token && (
+            <Link
+              to="/dashboard"
+              className={`block px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                location.pathname === '/dashboard'
+                  ? 'text-green-700 bg-green-50 font-semibold'
+                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
+              }`}
+            >
+              Dashboard
+            </Link>
+          )}
           <div className="flex flex-col gap-2 pt-3 border-t border-gray-100">
-            <Link
-              to="/contact"
-              className="block text-center text-green-600 border border-green-300 font-semibold text-sm px-4 py-2.5 rounded-lg hover:bg-green-50 transition-all duration-200"
-            >
-              Login
-            </Link>
-            <Link
-              to="/contact"
-              className="block text-center btn-primary text-sm"
-            >
-              Sign Up
-            </Link>
+            {token ? (
+              <button
+                onClick={handleLogout}
+                className="block w-full text-center text-red-500 border border-red-200 font-semibold text-sm px-4 py-2.5 rounded-lg hover:bg-red-50 transition-all duration-200"
+              >
+                Logout ({user?.name})
+              </button>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="block text-center text-green-600 border border-green-300 font-semibold text-sm px-4 py-2.5 rounded-lg hover:bg-green-50 transition-all duration-200"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="block text-center btn-primary text-sm p-4 h-full"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
