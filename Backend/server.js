@@ -15,6 +15,10 @@ const authRoutes = require('./src/routes/auth.routes');
 const requestRoutes = require('./src/routes/request.routes');
 const volunteerRoutes = require('./src/routes/volunteer.routes');
 const statsRoutes = require('./src/routes/stats.routes');
+const ngoRoutes = require('./src/routes/ngo.routes');
+const contributionRoutes = require('./src/routes/contribution.routes');
+const campaignRoutes = require('./src/routes/campaign.routes');
+const recommendationRoutes = require('./src/routes/recommendation.routes');
 
 // ─── Bootstrap DB ─────────────────────────────────────────────────────────────
 connectDB();
@@ -26,7 +30,7 @@ app.use(helmet());
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'http://localhost:3000', process.env.FRONTEND_URL].filter(Boolean),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -82,6 +86,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/volunteer', volunteerRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/ngos', ngoRoutes);
+app.use('/api/contributions', contributionRoutes);
+app.use('/api/campaigns', campaignRoutes);
+app.use('/api/recommendations', recommendationRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use(notFound);

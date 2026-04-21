@@ -1,159 +1,127 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, ArrowRight, Activity, Shield } from 'lucide-react';
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Mail, Lock, User, ArrowRight, Shield } from 'lucide-react'
 
 const Signup = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'user',
-  });
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate()
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'user' })
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
     try {
       const response = await fetch('http://localhost:5000/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
-      }
-
-      // Store token
-      localStorage.setItem('janseva_token', data.data.token);
-      localStorage.setItem('janseva_user', JSON.stringify(data.data.user));
-      
-      // Redirect to home/dashboard
-      navigate('/');
-      window.location.reload(); // Quick way to update navbar state
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.message || 'Something went wrong')
+      localStorage.setItem('janseva_token', data.data.token)
+      localStorage.setItem('janseva_user', JSON.stringify(data.data.user))
+      navigate('/dashboard')
+      window.location.reload()
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-emerald-50/30 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden mt-10">
-        <div className="p-8">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-8 h-8 text-emerald-600" />
+    <section className="section">
+      <div className="container">
+        <div className="content-grid">
+          <div className="light-panel p-8 md:p-12" style={{ background: 'linear-gradient(135deg, rgba(216,243,220,0.92), rgba(255,255,255,0.96) 58%, rgba(157,78,221,0.1))' }}>
+            <span className="section-label">Create Account</span>
+            <h1 className="page-title mt-5">Join a platform built to feel calm and capable</h1>
+            <p className="page-subtitle">
+              Sign up as a citizen, volunteer, or NGO representative and enter the refreshed JanSeva experience without changing the backend workflows behind it.
+            </p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+              {[
+                { label: 'Roles supported', value: '3' },
+                { label: 'Onboarding flow', value: 'Simpler' },
+                { label: 'Theme', value: 'Light SaaS' },
+              ].map((item) => (
+                <div key={item.label} className="glass-card p-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--text-soft)' }}>{item.label}</p>
+                  <p className="mt-2 text-lg font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>{item.value}</p>
+                </div>
+              ))}
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Create an Account</h2>
-            <p className="text-gray-500 mt-2">Join JanSeva to make a difference in your community.</p>
           </div>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  required
-                  className="pl-10 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
-                  placeholder="John Doe"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
+          <div className="glass-card p-8">
+            <div className="mb-8 text-center">
+              <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full" style={{ background: 'linear-gradient(135deg, var(--purple-accent), #7C3AED)' }}>
+                <Shield className="h-8 w-8" style={{ color: '#ffffff' }} />
               </div>
+              <h2 className="text-2xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>
+                Create your account
+              </h2>
+              <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>Set up your role and start contributing through JanSeva.</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="email"
-                  required
-                  className="pl-10 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
-                  placeholder="you@email.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
+            {error && (
+              <div className="mb-6 rounded-2xl px-4 py-3 text-sm font-medium" style={{ background: 'rgba(157,78,221,0.1)', border: '1px solid rgba(157,78,221,0.16)', color: 'var(--purple-accent)' }}>
+                {error}
               </div>
-            </div>
+            )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>Full Name</label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                    <User className="h-5 w-5" style={{ color: 'var(--text-soft)' }} />
+                  </div>
+                  <input type="text" required className="input-field pl-11" placeholder="John Doe" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                 </div>
-                <input
-                  type="password"
-                  required
-                  className="pl-10 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                />
               </div>
+              <div>
+                <label className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>Email Address</label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                    <Mail className="h-5 w-5" style={{ color: 'var(--text-soft)' }} />
+                  </div>
+                  <input type="email" required className="input-field pl-11" placeholder="you@email.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                </div>
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>Password</label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                    <Lock className="h-5 w-5" style={{ color: 'var(--text-soft)' }} />
+                  </div>
+                  <input type="password" required className="input-field pl-11" placeholder="Create a password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                </div>
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>I want to join as</label>
+                <select className="select-field" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
+                  <option value="user">Citizen / General User</option>
+                  <option value="volunteer">Volunteer</option>
+                  <option value="ngo">NGO Representative</option>
+                </select>
+              </div>
+              <button type="submit" disabled={loading} className="btn-mustard w-full">
+                {loading ? 'Creating account...' : 'Create Account'}
+                {!loading && <ArrowRight className="h-5 w-5" />}
+              </button>
+            </form>
+
+            <div className="mt-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
+              Already have an account? <Link to="/login" className="font-semibold" style={{ color: 'var(--green-6)' }}>Log in here</Link>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">I want to join as</label>
-              <select
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              >
-                <option value="user">Citizen / General User</option>
-                <option value="volunteer">Volunteer</option>
-                <option value="ngo">NGO Representative</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl transition-colors shadow-lg shadow-emerald-200 flex items-center justify-center space-x-2"
-            >
-              {loading ? (
-                <span>Creating account...</span>
-              ) : (
-                <>
-                  <span>Create Account</span>
-                  <ArrowRight className="w-5 h-5" />
-                </>
-              )}
-            </button>
-          </form>
-
-          <div className="mt-8 text-center text-sm text-gray-500">
-            Already have an account?{' '}
-            <Link to="/login" className="text-emerald-600 font-medium hover:underline">
-              Log in here
-            </Link>
           </div>
         </div>
       </div>
-    </div>
-  );
-};
+    </section>
+  )
+}
 
-export default Signup;
+export default Signup

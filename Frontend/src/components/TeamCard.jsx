@@ -1,16 +1,21 @@
 export default function TeamCard({ name, role, initials, gradient }) {
+  const bgMap = {
+    'bg-green-700': '#2D6A4F',
+    'bg-green-600': '#40916C',
+    'bg-green-500': '#4CC9F0',
+  }
+  const bg = bgMap[gradient] || '#40916C'
+
   return (
-    <div className="card p-5 flex flex-col items-center text-center gap-3 border border-gray-100">
-      {/* Avatar */}
+    <div className="glass-card p-6 text-center">
       <div
-        className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0 ${gradient}`}
+        className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-lg font-bold"
+        style={{ background: `linear-gradient(135deg, ${bg}, ${bg}cc)`, color: '#ffffff' }}
       >
         {initials}
       </div>
-      <div>
-        <p className="font-semibold text-green-800 text-sm">{name}</p>
-        <p className="text-gray-500 text-xs mt-0.5">{role}</p>
-      </div>
+      <p className="text-base font-bold" style={{ color: 'var(--green-8)' }}>{name}</p>
+      <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>{role}</p>
     </div>
   )
 }

@@ -55,8 +55,11 @@ const volunteerSchema = new mongoose.Schema(
 );
 
 // ─── Indexes ─────────────────────────────────────────────────────────────────
-volunteerSchema.index({ userId: 1 });
 volunteerSchema.index({ isAvailable: 1 });
 volunteerSchema.index({ skills: 1 });
+volunteerSchema.index({ skills: 1, isAvailable: 1 });                // compound: Feature 1
+volunteerSchema.index({ 'location.state': 1, isAvailable: 1 });      // compound: Feature 1
+volunteerSchema.index({ completedRequests: -1 });
+volunteerSchema.index({ rating: -1 });
 
 module.exports = mongoose.model('Volunteer', volunteerSchema);

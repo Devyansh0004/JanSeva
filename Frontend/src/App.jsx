@@ -9,13 +9,18 @@ import Contact from './pages/Contact'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
+import Explore from './pages/Explore'
+import Campaigns from './pages/Campaigns'
+import Contributions from './pages/Contributions'
+import Recommendations from './pages/Recommendations'
+import TopNGOs from './pages/TopNGOs'
 
 function App() {
   return (
     <Router>
-      <div className="flex flex-col min-h-screen">
+      <div className="app-shell flex flex-col min-h-screen">
         <Navbar />
-        <main className="flex-1">
+        <main className="site-main flex-1">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
@@ -25,6 +30,11 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/campaigns" element={<Campaigns />} />
+            <Route path="/contributions" element={<Contributions />} />
+            <Route path="/recommendations" element={<Recommendations />} />
+            <Route path="/top-ngos" element={<TopNGOs />} />
           </Routes>
         </main>
         <Footer />
