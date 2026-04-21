@@ -50,9 +50,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// ─── Indexes ─────────────────────────────────────────────────────────────────
-userSchema.index({ email: 1 });
-userSchema.index({ googleId: 1 }, { sparse: true });
 userSchema.index({ role: 1 });
 
 // ─── Pre-save: Hash password ─────────────────────────────────────────────────

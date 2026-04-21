@@ -1,17 +1,29 @@
-import { Quote } from 'lucide-react'
-
 export default function TestimonialCard({ quote, name, role, org, initials, color }) {
+  const bgColors = {
+    'bg-green-600': '#40916C',
+    'bg-green-500': '#4CC9F0',
+    'bg-green-700': '#2D6A4F',
+    'bg-green-400': '#9D4EDD',
+  }
+  const bg = bgColors[color] || '#40916C'
+
   return (
-    <div className="card p-6 border border-gray-100 flex flex-col gap-4 min-w-[280px] md:min-w-0">
-      <Quote size={20} className="text-green-300" />
-      <p className="text-gray-600 text-sm leading-relaxed italic flex-1">"{quote}"</p>
-      <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold flex-shrink-0 ${color}`}>
+    <div className="glass-card flex h-full flex-col justify-between gap-5 p-6">
+      <p className="text-sm leading-7 italic" style={{ color: 'var(--text-muted)' }}>
+        "{quote}"
+      </p>
+      <div className="flex items-center gap-3 pt-4" style={{ borderTop: '1px solid rgba(45, 106, 79, 0.08)' }}>
+        <div
+          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+          style={{ background: `linear-gradient(135deg, ${bg}, ${bg}dd)` }}
+        >
           {initials}
         </div>
         <div>
-          <p className="font-semibold text-green-800 text-sm">{name}</p>
-          <p className="text-gray-400 text-xs">{role}, {org}</p>
+          <p className="text-sm font-bold" style={{ color: 'var(--green-8)' }}>{name}</p>
+          <p className="text-xs" style={{ color: 'var(--text-soft)' }}>
+            {role} - {org}
+          </p>
         </div>
       </div>
     </div>

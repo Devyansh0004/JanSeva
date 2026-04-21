@@ -1,286 +1,358 @@
-import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
-} from 'recharts'
-import {
-  ClipboardList, CheckCircle2, Users, UserCheck,
-  AlertTriangle, Building2, TrendingUp, TrendingDown
-} from 'lucide-react'
-import StatCard from '../components/StatCard'
+import { useState, useEffect } from 'react'
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { Filter, Zap } from 'lucide-react'
 
-const kpiCards = [
-  {
-    label: 'Requests Received',
-    value: '4,821',
-    icon: ClipboardList,
-    trend: { up: true, value: '12%', label: 'vs last month' },
-  },
-  {
-    label: 'Requests Resolved',
-    value: '3,974',
-    icon: CheckCircle2,
-    trend: { up: true, value: '8%', label: 'vs last month' },
-  },
-  {
-    label: 'Volunteers Available',
-    value: '1,342',
-    icon: Users,
-    trend: { up: true, value: '5%', label: 'vs last month' },
-  },
-  {
-    label: 'Volunteers Assigned',
-    value: '1,106',
-    icon: UserCheck,
-    trend: { up: false, value: '3%', label: 'vs last month' },
-  },
-  {
-    label: 'High Priority Zones',
-    value: '18',
-    icon: AlertTriangle,
-    trend: { up: false, value: '2', label: 'new this week' },
-  },
-  {
-    label: 'NGO Participation Rate',
-    value: '82%',
-    icon: Building2,
-    trend: { up: true, value: '6%', label: 'vs last quarter' },
-  },
-]
-
-const monthlyData = [
-  { month: 'Oct', received: 380, resolved: 310 },
-  { month: 'Nov', received: 420, resolved: 350 },
-  { month: 'Dec', received: 500, resolved: 410 },
-  { month: 'Jan', received: 460, resolved: 400 },
-  { month: 'Feb', received: 540, resolved: 480 },
-  { month: 'Mar', received: 620, resolved: 550 },
-  { month: 'Apr', received: 710, resolved: 600 },
-]
-
-const categoryData = [
-  { name: 'Food Distribution', value: 28, color: '#2D6A4F' },
-  { name: 'Medical Assistance', value: 22, color: '#40916C' },
-  { name: 'Education Support', value: 18, color: '#52B788' },
-  { name: 'Shelter Assistance', value: 14, color: '#74C69D' },
-  { name: 'Emergency Response', value: 10, color: '#95D5B2' },
-  { name: 'Other Services', value: 8, color: '#B7E4C7' },
-]
-
-const volunteerDistribution = [
-  { district: 'Patna', volunteers: 280 },
-  { district: 'Gaya', volunteers: 185 },
-  { district: 'Muzaff.', volunteers: 162 },
-  { district: 'Nalanda', volunteers: 134 },
-  { district: 'Bhagalpur', volunteers: 118 },
-  { district: 'Darbhanga', volunteers: 97 },
-  { district: 'Rohtas', volunteers: 88 },
-]
-
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-card">
-        <p className="font-semibold text-green-800 text-sm mb-1">{label}</p>
-        {payload.map((p) => (
-          <p key={p.name} className="text-xs text-gray-600">
-            <span className="font-medium" style={{ color: p.color }}>{p.name}:</span>{' '}
-            {typeof p.value === 'number' ? p.value.toLocaleString() : p.value}
-          </p>
-        ))}
-      </div>
-    )
-  }
-  return null
-}
-
-const PieCustomTooltip = ({ active, payload }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-card">
-        <p className="font-semibold text-green-800 text-sm">{payload[0].name}</p>
-        <p className="text-xs text-gray-500">{payload[0].value}% of total</p>
-      </div>
-    )
-  }
-  return null
-}
+const API = 'http://localhost:5000/api/stats'
+const COLORS = ['#40916C', '#4CC9F0', '#52B788', '#9D4EDD', '#2D6A4F', '#74C69D']
 
 export default function Statistics() {
+  const [tab, setTab] = useState('overview')
+  const [overview, setOverview] = useState(null)
+  const [catData, setCatData] = useState([])
+  const [monthlyData, setMonthlyData] = useState([])
+  const [stateData, setStateData] = useState([])
+  const [insights, setInsights] = useState(null)
+  const [allocation, setAllocation] = useState(null)
+  const [filters, setFilters] = useState({ state: '', focusArea: '', contributionLevel: '' })
+  const [filteredNGOs, setFilteredNGOs] = useState([])
+  const [skills, setSkills] = useState('')
+  const [allocState, setAllocState] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const get = async (url) => {
+    try {
+      const response = await fetch(url)
+      if (response.ok) return (await response.json()).data
+      return null
+    } catch {
+      return null
+    }
+  }
+
+  useEffect(() => {
+    Promise.all([
+      get(`${API}/overview`),
+      get(`${API}/requests-by-category`),
+      get(`${API}/monthly-requests`),
+      get(`${API}/ngos-by-state`),
+      get(`${API}/data-insights`),
+    ]).then(([overviewData, categoryData, monthly, state, insightData]) => {
+      if (overviewData) setOverview(overviewData)
+      if (categoryData) setCatData(categoryData)
+      if (monthly) setMonthlyData(monthly)
+      if (state) setStateData(state)
+      if (insightData) setInsights(insightData)
+    })
+  }, [])
+
+  const applyFilters = async () => {
+    setLoading(true)
+    const params = new URLSearchParams()
+    if (filters.state) params.set('state', filters.state)
+    if (filters.focusArea) params.set('focusArea', filters.focusArea)
+    if (filters.contributionLevel) params.set('contributionLevel', filters.contributionLevel)
+    const data = await get(`${API}/filtered-ngos?${params}`)
+    setFilteredNGOs(data?.ngos || [])
+    setLoading(false)
+  }
+
+  const runAllocation = async () => {
+    setLoading(true)
+    const params = new URLSearchParams()
+    if (skills) params.set('skills', skills)
+    if (allocState) params.set('state', allocState)
+    const data = await get(`${API}/volunteer-allocation?${params}`)
+    setAllocation(data)
+    setLoading(false)
+  }
+
+  const tabs = ['overview', 'charts', 'query', 'allocation', 'insights']
+
   return (
-    <div className="pt-16 md:pt-[68px]">
-
-      {/* ===== PAGE HEADER ===== */}
-      <section className="bg-green-800 py-14">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <span className="text-green-300 font-semibold text-sm uppercase tracking-widest mb-3 inline-block">Data Intelligence</span>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Platform Statistics</h1>
-          <p className="text-green-200 text-lg max-w-2xl">
-            Real-time insights into community needs, volunteer deployment, and resource allocation across all active districts.
-          </p>
-        </div>
-      </section>
-
-      {/* ===== KPI CARDS ===== */}
-      <section className="py-12 bg-green-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {kpiCards.map((card) => (
-              <StatCard key={card.label} {...card} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== CHARTS ===== */}
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-
-          {/* Monthly Requests — Line Chart */}
-          <div className="card p-6 border border-gray-100">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h2 className="font-semibold text-green-800 text-lg">Monthly Service Requests</h2>
-                <p className="text-gray-400 text-sm mt-0.5">Received vs Resolved — last 7 months</p>
-              </div>
-              <div className="flex items-center gap-4 text-xs">
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-green-700 inline-block" />Received</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-green-400 inline-block" />Resolved</span>
+    <div>
+      <section className="page-hero">
+        <div className="container">
+          <div className="page-hero-grid">
+            <div className="page-hero-copy">
+              <span className="section-label">Analytics</span>
+              <h1 className="page-title">Readable analytics across your NGO data</h1>
+              <p className="page-subtitle">
+                The statistics workspace now fits the same layout system as the rest of the product while preserving every live query, chart, and filter.
+              </p>
+            </div>
+            <div className="page-hero-panel">
+              <div className="grid gap-4 md:grid-cols-2">
+                {overview && [
+                  { label: 'Requests', value: overview.requests?.total },
+                  { label: 'Resolved', value: overview.requests?.resolved },
+                  { label: 'Verified NGOs', value: overview.ngos?.verified },
+                  { label: 'Volunteers', value: overview.volunteers?.total },
+                ].map((item) => (
+                  <div key={item.label} className="glass-card p-5">
+                    <p className="text-xs font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--text-soft)' }}>{item.label}</p>
+                    <p className="mt-3 text-3xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>{item.value}</p>
+                  </div>
+                ))}
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={monthlyData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0fdf4" />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} />
-                <Line
-                  type="monotone" dataKey="received" name="Received"
-                  stroke="#2D6A4F" strokeWidth={2.5} dot={{ r: 4, fill: '#2D6A4F' }} activeDot={{ r: 6 }}
-                />
-                <Line
-                  type="monotone" dataKey="resolved" name="Resolved"
-                  stroke="#74C69D" strokeWidth={2.5} dot={{ r: 4, fill: '#74C69D' }} activeDot={{ r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <div className="app-tabs">
+            {tabs.map((item) => (
+              <button key={item} onClick={() => setTab(item)} className={`app-tab ${tab === item ? 'is-active' : ''}`}>
+                {item.charAt(0).toUpperCase() + item.slice(1)}
+              </button>
+            ))}
           </div>
 
-          {/* Bottom row: Pie + Bar */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-            {/* Resource Allocation — Pie Chart */}
-            <div className="card p-6 border border-gray-100">
-              <div className="mb-6">
-                <h2 className="font-semibold text-green-800 text-lg">Resource Allocation by Category</h2>
-                <p className="text-gray-400 text-sm mt-0.5">Percentage share of total service requests</p>
+          {tab === 'overview' && overview && (
+            <div className="mt-6 space-y-6">
+              <div className="cards-grid-4">
+                {[
+                  { label: 'Total Requests', value: overview.requests?.total },
+                  { label: 'Resolved', value: overview.requests?.resolved },
+                  { label: 'Pending', value: overview.requests?.pending },
+                  { label: 'Resolution Rate', value: `${overview.requests?.resolutionRate}%` },
+                ].map((item) => (
+                  <div key={item.label} className="glass-card p-5">
+                    <p className="text-xs font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--text-soft)' }}>{item.label}</p>
+                    <p className="mt-3 text-3xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>{item.value}</p>
+                  </div>
+                ))}
               </div>
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <ResponsiveContainer width="100%" height={220}>
+              <div className="glass-card p-6">
+                <h2 className="text-xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>NGOs per state</h2>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={stateData.slice(0, 12)} margin={{ bottom: 32 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 106, 79, 0.08)" />
+                    <XAxis dataKey="_id" angle={-30} textAnchor="end" tick={{ fontSize: 10, fill: '#5F7F72' }} />
+                    <YAxis tick={{ fontSize: 11, fill: '#5F7F72' }} />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#40916C" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {tab === 'charts' && (
+            <div className="cards-grid-2 mt-6">
+              <div className="glass-card p-6">
+                <h2 className="text-xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>Requests by category</h2>
+                <ResponsiveContainer width="100%" height={260}>
                   <PieChart>
-                    <Pie
-                      data={categoryData}
-                      cx="50%" cy="50%"
-                      innerRadius={60} outerRadius={95}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
+                    <Pie data={catData} dataKey="total" nameKey="category" cx="50%" cy="50%" outerRadius={88} label={({ category }) => category}>
+                      {catData.map((_, index) => <Cell key={index} fill={COLORS[index % COLORS.length]} />)}
                     </Pie>
-                    <Tooltip content={<PieCustomTooltip />} />
+                    <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="space-y-2 min-w-[160px]">
-                  {categoryData.map((cat) => (
-                    <div key={cat.name} className="flex items-center gap-2.5">
-                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
-                      <span className="text-gray-600 text-xs">{cat.name}</span>
-                      <span className="ml-auto text-xs font-semibold text-green-700">{cat.value}%</span>
+              </div>
+
+              <div className="glass-card p-6">
+                <h2 className="text-xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>Monthly request trend</h2>
+                <ResponsiveContainer width="100%" height={260}>
+                  <LineChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 106, 79, 0.08)" />
+                    <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#5F7F72' }} />
+                    <YAxis tick={{ fontSize: 11, fill: '#5F7F72' }} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="total" stroke="#40916C" strokeWidth={3} dot={false} />
+                    <Line type="monotone" dataKey="resolved" stroke="#4CC9F0" strokeWidth={3} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {tab === 'query' && (
+            <div className="mt-6 space-y-6">
+              <div className="glass-card p-6">
+                <div className="mb-5 flex items-center gap-3">
+                  <div className="icon-shell">
+                    <Filter size={18} strokeWidth={1.8} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>MongoDB query builder</h2>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Filter NGOs by state, focus area, and contribution level.</p>
+                  </div>
+                </div>
+                <div className="cards-grid-3">
+                  {[
+                    { label: 'State', key: 'state', options: ['', 'Maharashtra', 'Delhi', 'Bihar', 'Uttar Pradesh', 'Gujarat', 'Karnataka', 'Tamil Nadu', 'Rajasthan', 'West Bengal', 'Telangana', 'Kerala', 'Punjab'] },
+                    { label: 'Focus Area', key: 'focusArea', options: ['', 'Food', 'Medical', 'Shelter', 'Education', 'Emergency', 'Other'] },
+                    { label: 'Contribution Level', key: 'contributionLevel', options: ['', 'Low', 'Medium', 'High', 'Critical'] },
+                  ].map((field) => (
+                    <div key={field.key}>
+                      <label className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>{field.label}</label>
+                      <select className="select-field" value={filters[field.key]} onChange={(e) => setFilters((prev) => ({ ...prev, [field.key]: e.target.value }))}>
+                        {field.options.map((option) => <option key={option} value={option}>{option || `All ${field.label}s`}</option>)}
+                      </select>
                     </div>
                   ))}
                 </div>
+                <button onClick={applyFilters} className="btn-primary mt-5">
+                  {loading ? 'Running...' : 'Run Query'}
+                </button>
               </div>
-            </div>
 
-            {/* Volunteer Distribution — Bar Chart */}
-            <div className="card p-6 border border-gray-100">
-              <div className="mb-6">
-                <h2 className="font-semibold text-green-800 text-lg">Volunteer Distribution</h2>
-                <p className="text-gray-400 text-sm mt-0.5">Active volunteers per district</p>
-              </div>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={volunteerDistribution} margin={{ top: 0, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0fdf4" vertical={false} />
-                  <XAxis dataKey="district" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="volunteers" name="Volunteers" radius={[4, 4, 0, 0]}>
-                    {volunteerDistribution.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={index % 2 === 0 ? '#2D6A4F' : '#52B788'}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Urgent Need Heatmap Preview */}
-          <div className="card p-6 border border-gray-100">
-            <div className="mb-6">
-              <h2 className="font-semibold text-green-800 text-lg">Urgent Need Heatmap Preview</h2>
-              <p className="text-gray-400 text-sm mt-0.5">Priority zones requiring immediate volunteer deployment</p>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {[
-                { zone: 'Patna Urban', level: 'critical', requests: 142 },
-                { zone: 'Gaya Rural', level: 'high', requests: 98 },
-                { zone: 'Muzaffarpur', level: 'high', requests: 87 },
-                { zone: 'Nalanda', level: 'medium', requests: 63 },
-                { zone: 'Bhagalpur', level: 'medium', requests: 54 },
-                { zone: 'Darbhanga', level: 'low', requests: 41 },
-                { zone: 'Rohtas', level: 'low', requests: 38 },
-                { zone: 'Jamui', level: 'medium', requests: 56 },
-                { zone: 'Sitamarhi', level: 'high', requests: 79 },
-                { zone: 'Samastipur', level: 'low', requests: 30 },
-                { zone: 'Begusarai', level: 'medium', requests: 45 },
-                { zone: 'Vaishali', level: 'critical', requests: 115 },
-              ].map((zone) => {
-                const configs = {
-                  critical: { bg: 'bg-green-800', text: 'text-white', badge: 'CRITICAL' },
-                  high: { bg: 'bg-green-600', text: 'text-white', badge: 'HIGH' },
-                  medium: { bg: 'bg-green-200', text: 'text-green-800', badge: 'MED' },
-                  low: { bg: 'bg-green-50', text: 'text-green-600', badge: 'LOW' },
-                }
-                const c = configs[zone.level]
-                return (
-                  <div key={zone.zone} className={`${c.bg} ${c.text} rounded-xl p-3 text-center transition-transform duration-200 hover:scale-105 cursor-default`}>
-                    <p className="text-[10px] font-bold tracking-wider opacity-70 mb-1">{c.badge}</p>
-                    <p className="text-sm font-semibold leading-tight">{zone.zone}</p>
-                    <p className="text-xl font-bold mt-1">{zone.requests}</p>
-                    <p className="text-[10px] opacity-70 mt-0.5">pending</p>
+              {filteredNGOs.length > 0 && (
+                <div className="glass-card overflow-hidden">
+                  <div className="border-b p-5" style={{ borderColor: 'rgba(45, 106, 79, 0.08)' }}>
+                    <h3 className="text-lg font-bold" style={{ color: 'var(--green-8)' }}>Results: {filteredNGOs.length} NGOs</h3>
                   </div>
-                )
-              })}
+                  <div className="overflow-x-auto">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>NGO Name</th>
+                          <th>State</th>
+                          <th>City</th>
+                          <th>Focus Areas</th>
+                          <th>Contribution</th>
+                          <th>Impact</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredNGOs.map((ngo) => (
+                          <tr key={ngo._id}>
+                            <td>{ngo.name}</td>
+                            <td>{ngo.state}</td>
+                            <td>{ngo.city}</td>
+                            <td>{ngo.focusAreas?.join(', ')}</td>
+                            <td>{ngo.contributionLevel}</td>
+                            <td>{ngo.impactScore}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
-            {/* Legend */}
-            <div className="flex flex-wrap gap-5 mt-5 pt-4 border-t border-gray-100">
-              {[
-                { label: 'Critical (100+)', color: 'bg-green-800' },
-                { label: 'High (75-99)', color: 'bg-green-600' },
-                { label: 'Medium (40-74)', color: 'bg-green-200' },
-                { label: 'Low (<40)', color: 'bg-green-50 border border-green-200' },
-              ].map((l) => (
-                <span key={l.label} className="flex items-center gap-2 text-xs text-gray-500">
-                  <span className={`w-3 h-3 rounded ${l.color} inline-block`} />
-                  {l.label}
-                </span>
-              ))}
+          )}
+
+          {tab === 'allocation' && (
+            <div className="mt-6 space-y-6">
+              <div className="glass-card p-6">
+                <div className="mb-5 flex items-center gap-3">
+                  <div className="icon-shell purple">
+                    <Zap size={18} strokeWidth={1.8} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>Smart volunteer allocation</h2>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Match volunteer skills to NGOs using the existing backend pipeline.</p>
+                  </div>
+                </div>
+                <div className="cards-grid-2">
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>Skills</label>
+                    <input className="input-field" placeholder="First Aid, Teaching, Medical" value={skills} onChange={(e) => setSkills(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>State Filter</label>
+                    <select className="select-field" value={allocState} onChange={(e) => setAllocState(e.target.value)}>
+                      {['', 'Maharashtra', 'Delhi', 'Bihar', 'Uttar Pradesh', 'Gujarat', 'Karnataka', 'Tamil Nadu', 'Rajasthan'].map((state) => <option key={state}>{state || 'All States'}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <button onClick={runAllocation} className="btn-mustard mt-5">
+                  {loading ? 'Matching...' : 'Match Volunteers to NGOs'}
+                </button>
+                {allocation && (
+                  <div className="mt-5 rounded-2xl p-4 text-xs" style={{ background: 'rgba(216, 243, 220, 0.52)', color: 'var(--text-muted)' }}>
+                    Pipeline: {allocation.mongodbPipeline} | Matches: {allocation.totalMatches}
+                  </div>
+                )}
+              </div>
+
+              {allocation?.matches?.length > 0 && (
+                <div className="glass-card overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Volunteer</th>
+                          <th>Skills</th>
+                          <th>State</th>
+                          <th>Rating</th>
+                          <th>Completed</th>
+                          <th>Matched NGOs</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {allocation.matches.map((match, index) => (
+                          <tr key={index}>
+                            <td>{match.user?.name}</td>
+                            <td>{match.skills?.join(', ')}</td>
+                            <td>{match.location?.state}</td>
+                            <td>{match.rating}</td>
+                            <td>{match.completedRequests}</td>
+                            <td>{match.matchedNGOs?.map((ngo) => ngo.name).join(', ')}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
+          )}
+
+          {tab === 'insights' && insights && (
+            <div className="mt-6 space-y-6">
+              <div className="glass-card p-5 text-sm" style={{ color: 'var(--text-muted)' }}>
+                MongoDB features used: <strong style={{ color: 'var(--green-8)' }}>{insights.mongodbFeatures?.join(' | ')}</strong>
+              </div>
+
+              <div className="cards-grid-2">
+                {insights.ngo?.byFocusArea?.length > 0 && (
+                  <div className="glass-card p-6">
+                    <h2 className="text-xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>NGOs by focus area</h2>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <PieChart>
+                        <Pie data={insights.ngo.byFocusArea} dataKey="count" nameKey="_id" cx="50%" cy="50%" outerRadius={80} label={({ _id }) => _id}>
+                          {insights.ngo.byFocusArea.map((_, index) => <Cell key={index} fill={COLORS[index % COLORS.length]} />)}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+
+                {insights.volunteer?.bySkill?.length > 0 && (
+                  <div className="glass-card p-6">
+                    <h2 className="text-xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>Volunteer skills distribution</h2>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <BarChart data={insights.volunteer.bySkill.slice(0, 8)} layout="vertical" margin={{ left: 80 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 106, 79, 0.08)" />
+                        <XAxis type="number" tick={{ fontSize: 11, fill: '#5F7F72' }} />
+                        <YAxis type="category" dataKey="_id" tick={{ fontSize: 10, fill: '#5F7F72' }} />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="#40916C" radius={[0, 6, 6, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+
+              {insights.requests?.underservedStates?.length > 0 && (
+                <div className="cards-grid-4">
+                  {insights.requests.underservedStates.map((state) => (
+                    <div key={state._id} className="glass-card p-5">
+                      <p className="text-xs font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--text-soft)' }}>{state._id}</p>
+                      <p className="mt-3 text-3xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--purple-accent)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>{state.pending}</p>
+                      <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>pending of {state.total} total</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
     </div>
