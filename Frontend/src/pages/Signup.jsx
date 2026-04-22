@@ -1,12 +1,26 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Mail, Lock, User, ArrowRight, Shield } from 'lucide-react'
+import { Mail, Lock, User, ArrowRight, Shield, Eye, EyeOff } from 'lucide-react'
 
 const Signup = () => {
   const navigate = useNavigate()
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'user' })
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'volunteer' })
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [showPwd, setShowPwd] = useState(false)
+
+  const getStrength = (pass) => {
+    let s = 0;
+    if (pass.length > 7) s += 1;
+    if (/[A-Z]/.test(pass)) s += 1;
+    if (/[a-z]/.test(pass)) s += 1;
+    if (/[0-9]/.test(pass)) s += 1;
+    if (/[^A-Za-z0-9]/.test(pass)) s += 1;
+    return s;
+  }
+  const strength = getStrength(formData.password)
+  const strengthLabels = ['Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Excellent']
+  const strengthColors = ['bg-red-500', 'bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-green-600']
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -97,13 +111,25 @@ const Signup = () => {
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                     <Lock className="h-5 w-5" style={{ color: 'var(--text-soft)' }} />
                   </div>
-                  <input type="password" required className="input-field input-field-icon" placeholder="Create a password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                  <input type={showPwd ? "text" : "password"} required className="input-field input-field-icon pr-10" placeholder="Create a password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                  <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600">
+                    {showPwd ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
                 </div>
+                {formData.password && (
+                  <div className="mt-2">
+                    <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+                      <div className={`h-full ${strengthColors[strength]} transition-all duration-300`} style={{ width: `${(strength / 5) * 100}%` }}></div>
+                    </div>
+                    <p className={`mt-1 text-xs font-medium ${strength < 3 ? 'text-red-500' : strength < 5 ? 'text-orange-500' : 'text-green-600'}`}>
+                      Password strength: {strengthLabels[strength]}
+                    </p>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>I want to join as</label>
                 <select className="select-field" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
-                  <option value="user">Citizen / General User</option>
                   <option value="volunteer">Volunteer</option>
                   <option value="ngo">NGO Representative</option>
                 </select>

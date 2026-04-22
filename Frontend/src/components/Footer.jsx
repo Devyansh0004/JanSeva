@@ -9,12 +9,12 @@ const footerLinks = {
     { label: 'Services', path: '/services' },
     { label: 'Contact Us', path: '/contact' },
   ],
-  Services: [
-    { label: 'Volunteer Registration', path: '/services' },
-    { label: 'Need Reporting', path: '/services' },
-    { label: 'Emergency Coordination', path: '/services' },
-    { label: 'NGO Collaboration', path: '/services' },
-    { label: 'Resource Tracking', path: '/services' },
+  Explore: [
+    { label: 'Find NGOs', path: '/explore' },
+    { label: 'Top NGOs', path: '/top-ngos' },
+    { label: 'Campaigns', path: '/campaigns' },
+    { label: 'Contributions', path: '/contributions' },
+    { label: 'Analytics', path: '/statistics' },
   ],
 }
 

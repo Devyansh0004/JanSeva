@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Mail, Lock, ArrowRight, Activity } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Activity, Eye, EyeOff } from 'lucide-react'
 
 const Login = () => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({ email: '', password: '' })
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [showPwd, setShowPwd] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -91,7 +92,10 @@ const Login = () => {
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                     <Lock className="h-5 w-5" style={{ color: 'var(--text-soft)' }} />
                   </div>
-                  <input type="password" required className="input-field input-field-icon" placeholder="Enter your password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                  <input type={showPwd ? "text" : "password"} required className="input-field input-field-icon pr-10" placeholder="Enter your password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                  <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600">
+                    {showPwd ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
                 </div>
               </div>
               <button type="submit" disabled={loading} className="btn-primary w-full">

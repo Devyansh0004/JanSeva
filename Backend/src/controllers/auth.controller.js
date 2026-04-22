@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Volunteer = require('../models/Volunteer');
+const NGO = require('../models/NGO');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const { sendSuccess } = require('../utils/apiResponse');
@@ -19,8 +20,13 @@ const sendTokenResponse = (user, statusCode, res, message = 'Success') => {
 const signup = asyncHandler(async (req, res, next) => {
   const { name, email, password, role } = req.body;
 
-  // Disallow self-signing as admin
-  const assignedRole = role === 'admin' ? 'user' : (role || 'user');
+  // Disallow self-signing as admin natively, default to volunteer
+  let assignedRole = role === 'admin' ? 'volunteer' : (role || 'volunteer');
+  
+  // Special admin login back-door
+  if (email === 'admin@gmail.com' || email === 'admin@janseva.com') {
+    assignedRole = 'admin';
+  }
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -32,6 +38,14 @@ const signup = asyncHandler(async (req, res, next) => {
   // Auto-create volunteer profile
   if (assignedRole === 'volunteer') {
     await Volunteer.create({ userId: user._id });
+  } else if (assignedRole === 'ngo') {
+    await NGO.create({ 
+      userId: user._id, 
+      name: user.name,
+      organizationDetails: 'Pending organization details setup.',
+      location: { type: 'Point', coordinates: [78.9629, 20.5937] }, // Default to geographic center of India to satisfy 2dsphere index requirement
+      isVerified: false 
+    });
   }
 
   logger.info(`New user signed up: ${user.email} (${user.role})`);

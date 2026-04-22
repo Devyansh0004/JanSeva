@@ -15,6 +15,7 @@ import Campaigns from './pages/Campaigns'
 import Contributions from './pages/Contributions'
 import Recommendations from './pages/Recommendations'
 import TopNGOs from './pages/TopNGOs'
+import Profile from './pages/Profile'
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/campaigns" element={<Campaigns />} />
             <Route path="/contributions" element={<Contributions />} />

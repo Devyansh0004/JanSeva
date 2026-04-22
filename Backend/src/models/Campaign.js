@@ -23,6 +23,10 @@ const campaignSchema = new mongoose.Schema(
       enum: ['Food', 'Medical', 'Shelter', 'Education', 'Emergency', 'Other'],
       required: true,
     },
+    isEmergency: {
+      type: Boolean,
+      default: false,
+    },
     targetAmount: { type: Number, default: 0 },
     raisedAmount: { type: Number, default: 0 },
     volunteerTarget: { type: Number, default: 10 },

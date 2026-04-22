@@ -25,10 +25,16 @@ const signupValidator = [
     .normalizeEmail(),
   body('password')
     .notEmpty().withMessage('Password is required')
-    .isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    .isStrongPassword({
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 1,
+    }).withMessage('Password must be at least 8 characters long, contain an uppercase letter, lowercase letter, number, and symbol.'),
   body('role')
     .optional()
-    .isIn(['admin', 'ngo', 'volunteer', 'user']).withMessage('Invalid role'),
+    .isIn(['admin', 'ngo', 'volunteer']).withMessage('Invalid role'),
   validate,
 ];
 

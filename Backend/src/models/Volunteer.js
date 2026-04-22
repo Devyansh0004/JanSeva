@@ -34,6 +34,14 @@ const volunteerSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    surveysConducted: {
+      type: Number,
+      default: 0,
+    },
+    volunteeringHours: {
+      type: Number,
+      default: 0,
+    },
     rating: {
       type: Number,
       min: 0,
