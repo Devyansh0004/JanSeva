@@ -1,0 +1,6 @@
+village_id,village_name,state,district,population,survey_date,num_health_centers,avg_distance_to_hospital_km,doctors_per_1000,vaccination_coverage_pct,infant_mortality_rate_per_1000,malnutrition_children_pct,food_insecure_households_pct,avg_meals_per_day,clean_water_access_pct,crop_failure_last_3_years,ration_card_coverage_pct,literacy_rate_pct,school_enrollment_pct,student_teacher_ratio,dropout_rate_pct,distance_to_school_km,homeless_or_damaged_homes_pct,avg_persons_per_room,homes_without_electricity_pct,homes_without_sanitation_pct,disaster_affected_pct
+VLG_001,Rampur,Rajasthan,Jodhpur,3200,2023-10-01,0,28,0.3,42,68,35,61,1.4,38,2,44,41,52,48,34,6,28,4.1,55,62,18
+VLG_002,Khurda,Odisha,Khurda,2100,2023-10-02,1,15,1.2,65,45,20,40,2.1,60,1,75,65,75,35,15,3,15,3.2,30,40,5
+VLG_003,Sundernagar,Himachal,Mandi,1500,2023-10-03,0,35,0.1,50,55,25,55,1.8,45,0,50,70,80,30,10,8,10,2.5,20,30,0
+VLG_004,Narayanpur,Chhattisgarh,Bastar,4500,2023-10-04,0,45,0.0,30,85,45,75,1.1,25,3,30,35,40,60,45,12,40,5.5,70,80,25
+VLG_005,Bhiloda,Gujarat,Aravalli,2800,2023-10-05,2,10,2.5,85,25,10,20,2.8,85,0,90,82,90,25,5,2,5,2.1,10,15,0
