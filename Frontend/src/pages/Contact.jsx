@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Mail, Phone, MapPin, Clock, ArrowRight } from 'lucide-react'
 
 const contactInfo = [
-  { icon: Mail, title: 'Email', value: 'support@janseva.org', sub: 'We reply within 24 hours' },
-  { icon: Phone, title: 'Phone', value: '+91 (0612) 302-8001', sub: 'Mon - Fri, 9 AM - 6 PM IST' },
+  { icon: Mail, title: 'Email', value: 'support.janseva@gmail.com', sub: 'We reply within 24 hours' },
+  { icon: Phone, title: 'Phone', value: '7404189988', sub: 'Mon - Fri, 9 AM - 6 PM IST' },
   { icon: MapPin, title: 'Address', value: 'IIT Patna, Bihta', sub: 'Bihar - 801106, India' },
   { icon: Clock, title: 'Working Hours', value: 'Mon - Fri: 9 AM - 6 PM', sub: 'Sat: 10 AM - 2 PM IST' },
 ]
@@ -13,14 +13,63 @@ const subjectOptions = ['General Inquiry', 'NGO Onboarding', 'Volunteer Registra
 export default function Contact() {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', subject: '', message: '' })
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState([])
+  const [sending, setSending] = useState(false)
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    const errors = []
+
+    if (form.firstName.trim().length < 2) errors.push('First name must be at least 2 characters.')
+    if (form.lastName.trim().length < 2) errors.push('Last name must be at least 2 characters.')
+    if (!form.email.trim()) errors.push('Email is required.')
+    if (!form.subject.trim()) errors.push('Please select a subject.')
+    if (form.message.trim().length < 10) errors.push('Message must be at least 10 characters.')
+
+    return errors
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setSubmitted(true)
-    setTimeout(() => setSubmitted(false), 4000)
-    setForm({ firstName: '', lastName: '', email: '', phone: '', subject: '', message: '' })
+    setSending(true)
+    setError('')
+    setFieldErrors([])
+    setSubmitted(false)
+
+    const clientErrors = validateForm()
+    if (clientErrors.length > 0) {
+      setFieldErrors(clientErrors)
+      setSending(false)
+      return
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (Array.isArray(data.errors) && data.errors.length > 0) {
+          setFieldErrors(data.errors.map((item) => item.msg))
+        }
+        throw new Error(data.message || 'Unable to send message right now.')
+      }
+
+      setSubmitted(true)
+      setForm({ firstName: '', lastName: '', email: '', phone: '', subject: '', message: '' })
+      setFieldErrors([])
+      setTimeout(() => setSubmitted(false), 5000)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -66,7 +115,24 @@ export default function Contact() {
 
               {submitted && (
                 <div className="mt-6 rounded-2xl px-5 py-4 text-sm font-semibold" style={{ background: '#D8F3DC', border: '1px solid #B7E4C7', color: '#2D6A4F' }}>
-                  Message sent. Our team will get back to you shortly.
+                  Message sent to support.janseva@gmail.com.
+                </div>
+              )}
+
+              {error && (
+                <div className="mt-6 rounded-2xl px-5 py-4 text-sm font-semibold" style={{ background: 'rgba(157,78,221,0.1)', border: '1px solid rgba(157,78,221,0.18)', color: 'var(--purple-accent)' }}>
+                  {error}
+                </div>
+              )}
+
+              {fieldErrors.length > 0 && (
+                <div className="mt-6 rounded-2xl px-5 py-4 text-sm" style={{ background: 'rgba(157,78,221,0.08)', border: '1px solid rgba(157,78,221,0.16)', color: 'var(--purple-accent)' }}>
+                  <p className="font-semibold">Please fix these fields:</p>
+                  <ul className="mt-2 list-disc pl-5">
+                    {fieldErrors.map((item, index) => (
+                      <li key={`${item}-${index}`}>{item}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
 
@@ -74,11 +140,11 @@ export default function Contact() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label htmlFor="firstName" className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>First Name</label>
-                    <input id="firstName" name="firstName" type="text" value={form.firstName} onChange={handleChange} className="input-field" placeholder="Arjun" required />
+                    <input id="firstName" name="firstName" type="text" value={form.firstName} onChange={handleChange} className="input-field" placeholder="Arjun" minLength={2} required />
                   </div>
                   <div>
                     <label htmlFor="lastName" className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>Last Name</label>
-                    <input id="lastName" name="lastName" type="text" value={form.lastName} onChange={handleChange} className="input-field" placeholder="Verma" required />
+                    <input id="lastName" name="lastName" type="text" value={form.lastName} onChange={handleChange} className="input-field" placeholder="Verma" minLength={2} required />
                   </div>
                 </div>
 
@@ -105,12 +171,12 @@ export default function Contact() {
 
                 <div>
                   <label htmlFor="message" className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>Message</label>
-                  <textarea id="message" name="message" value={form.message} onChange={handleChange} className="input-field" rows={6} placeholder="Tell us how we can help your team or community..." required />
+                  <textarea id="message" name="message" value={form.message} onChange={handleChange} className="input-field" rows={6} placeholder="Tell us how we can help your team or community..." minLength={10} required />
                 </div>
 
-                <button type="submit" className="btn-primary w-full">
-                  Send Message
-                  <ArrowRight size={18} />
+                <button type="submit" className="btn-primary w-full" disabled={sending}>
+                  {sending ? 'Sending...' : 'Send Message'}
+                  {!sending && <ArrowRight size={18} />}
                 </button>
               </form>
             </div>

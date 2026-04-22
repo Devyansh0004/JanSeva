@@ -43,6 +43,35 @@ const loginValidator = [
   validate,
 ];
 
+const contactValidator = [
+  body('firstName')
+    .trim()
+    .notEmpty().withMessage('First name is required')
+    .isLength({ min: 2, max: 50 }).withMessage('First name must be 2-50 characters'),
+  body('lastName')
+    .trim()
+    .notEmpty().withMessage('Last name is required')
+    .isLength({ min: 2, max: 50 }).withMessage('Last name must be 2-50 characters'),
+  body('email')
+    .trim()
+    .notEmpty().withMessage('Email is required')
+    .isEmail().withMessage('Please enter a valid email')
+    .normalizeEmail(),
+  body('phone')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ max: 20 }).withMessage('Phone number cannot exceed 20 characters'),
+  body('subject')
+    .trim()
+    .notEmpty().withMessage('Subject is required')
+    .isLength({ min: 3, max: 120 }).withMessage('Subject must be 3-120 characters'),
+  body('message')
+    .trim()
+    .notEmpty().withMessage('Message is required')
+    .isLength({ min: 10, max: 2000 }).withMessage('Message must be 10-2000 characters'),
+  validate,
+];
+
 // ─── Service Request Validators ───────────────────────────────────────────────
 const requestValidator = [
   body('title')
@@ -86,6 +115,7 @@ const objectIdValidator = (paramName) => [
 module.exports = {
   signupValidator,
   loginValidator,
+  contactValidator,
   requestValidator,
   assignVolunteerValidator,
   objectIdValidator,
