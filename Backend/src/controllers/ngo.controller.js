@@ -138,4 +138,83 @@ const getNGOById = asyncHandler(async (req, res) => {
   sendSuccess(res, 200, 'NGO fetched', ngo);
 });
 
-module.exports = { getAllNGOs, getRankedNGOs, searchNGOs, getNearbyNGOs, getNGOById };
+// ─── ADMIN: GET /api/ngos/admin/pending ───────────────────────────────────────
+const getPendingNGOs = asyncHandler(async (req, res) => {
+  const ngos = await NGO.find({ approvalStatus: 'pending' }).lean();
+  sendSuccess(res, 200, 'Pending NGOs fetched', ngos);
+});
+
+// ─── ADMIN: PATCH /api/ngos/admin/:id/approve ─────────────────────────────────
+const approveNGO = asyncHandler(async (req, res) => {
+  const ngo = await NGO.findById(req.params.id);
+  if (!ngo) throw new AppError('NGO not found', 404);
+  
+  ngo.approvalStatus = 'approved';
+  ngo.isVerified = true;
+  await ngo.save();
+  
+  sendSuccess(res, 200, 'NGO approved successfully', ngo);
+});
+
+// ─── ADMIN: PATCH /api/ngos/admin/:id/reject ──────────────────────────────────
+const rejectNGO = asyncHandler(async (req, res) => {
+  const ngo = await NGO.findById(req.params.id);
+  if (!ngo) throw new AppError('NGO not found', 404);
+  
+  ngo.approvalStatus = 'rejected';
+  ngo.isVerified = false;
+  await ngo.save();
+  
+  sendSuccess(res, 200, 'NGO rejected', ngo);
+});
+
+// ─── NGO: GET /api/ngos/profile ───────────────────────────────────────────────
+const getMyNGOProfile = asyncHandler(async (req, res) => {
+  const ngo = await NGO.findOne({ userId: req.user._id }).lean();
+  if (!ngo) throw new AppError('NGO profile not found', 404);
+  sendSuccess(res, 200, 'Profile fetched', ngo);
+});
+
+// ─── NGO: PUT /api/ngos/profile ───────────────────────────────────────────────
+const updateMyNGOProfile = asyncHandler(async (req, res) => {
+  const updates = req.body;
+  // Disallow changing critical fields via this route
+  delete updates.approvalStatus;
+  delete updates.isVerified;
+  delete updates.userId;
+  
+  updates.isProfileComplete = true; // Mark profile as complete once updated
+
+  const ngo = await NGO.findOneAndUpdate({ userId: req.user._id }, updates, {
+    new: true,
+    runValidators: true,
+  });
+  
+  if (!ngo) throw new AppError('NGO profile not found', 404);
+  sendSuccess(res, 200, 'Profile updated successfully', ngo);
+});
+
+// ─── NGO: DELETE /api/ngos/profile ────────────────────────────────────────────
+const deleteMyNGOProfile = asyncHandler(async (req, res) => {
+  const ngo = await NGO.findOne({ userId: req.user._id });
+  if (!ngo) throw new AppError('NGO profile not found', 404);
+  
+  // Clean up relationships
+  const Campaign = require('../models/Campaign');
+  const VolunteerNGO = require('../models/VolunteerNGO');
+  
+  await Campaign.deleteMany({ ngoId: ngo._id });
+  await VolunteerNGO.deleteMany({ ngoId: ngo._id });
+  await NGO.findByIdAndDelete(ngo._id);
+  
+  // Optional: delete or downgrade the user account
+  const User = require('../models/User');
+  await User.findByIdAndDelete(req.user._id);
+
+  sendSuccess(res, 200, 'NGO account deleted successfully');
+});
+
+module.exports = { 
+  getAllNGOs, getRankedNGOs, searchNGOs, getNearbyNGOs, getNGOById,
+  getPendingNGOs, approveNGO, rejectNGO, getMyNGOProfile, updateMyNGOProfile, deleteMyNGOProfile
+};

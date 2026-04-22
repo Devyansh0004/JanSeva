@@ -53,6 +53,15 @@ const ngoSchema = new mongoose.Schema(
     totalContributions: { type: Number, default: 0, min: 0 },
     registeredRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ServiceRequest' }],
     isVerified: { type: Boolean, default: false },
+    approvalStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending',
+    },
+    isProfileComplete: {
+      type: Boolean,
+      default: false,
+    },
     impactScore: { type: Number, default: 0 },
     foundedYear: { type: Number },
   },

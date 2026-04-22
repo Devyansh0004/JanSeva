@@ -38,13 +38,17 @@ const signup = asyncHandler(async (req, res, next) => {
   // Auto-create volunteer profile
   if (assignedRole === 'volunteer') {
     await Volunteer.create({ userId: user._id });
-  } else if (assignedRole === 'ngo') {
-    await NGO.create({ 
-      userId: user._id, 
-      name: user.name,
-      organizationDetails: 'Pending organization details setup.',
-      location: { type: 'Point', coordinates: [78.9629, 20.5937] }, // Default to geographic center of India to satisfy 2dsphere index requirement
-      isVerified: false 
+  }
+
+  // Auto-create NGO profile in pending state
+  if (assignedRole === 'ngo') {
+    await NGO.create({
+      userId: user._id,
+      name: name,
+      organizationDetails: 'Pending details',
+      location: { type: 'Point', coordinates: [78.9629, 20.5937] }, // Default to geographic center of India
+      approvalStatus: 'pending',
+      isProfileComplete: false
     });
   }
 

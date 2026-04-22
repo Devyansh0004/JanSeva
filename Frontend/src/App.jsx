@@ -15,7 +15,10 @@ import Campaigns from './pages/Campaigns'
 import Contributions from './pages/Contributions'
 import Recommendations from './pages/Recommendations'
 import TopNGOs from './pages/TopNGOs'
+import NGOProfile from './pages/NGOProfile'
+import VolunteerProfile from './pages/VolunteerProfile'
 import Profile from './pages/Profile'
+import CampaignDetails from './pages/CampaignDetails'
 
 function App() {
   return (
@@ -39,6 +42,9 @@ function App() {
             <Route path="/contributions" element={<Contributions />} />
             <Route path="/recommendations" element={<Recommendations />} />
             <Route path="/top-ngos" element={<TopNGOs />} />
+            <Route path="/ngo-profile" element={<NGOProfile />} />
+            <Route path="/volunteer-profile" element={<VolunteerProfile />} />
+            <Route path="/ngo-campaign/:id" element={<CampaignDetails />} />
           </Routes>
         </main>
         <Footer />

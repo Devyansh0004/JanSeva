@@ -20,6 +20,7 @@ const contributionRoutes = require('./src/routes/contribution.routes');
 const campaignRoutes = require('./src/routes/campaign.routes');
 const recommendationRoutes = require('./src/routes/recommendation.routes');
 const contactRoutes = require('./src/routes/contact.routes');
+const volunteerNgoRoutes = require('./src/routes/volunteer-ngo.routes');
 const dashboardRoutes = require('./src/routes/dashboard.routes');
 
 // ─── Bootstrap DB ─────────────────────────────────────────────────────────────
@@ -93,6 +94,7 @@ app.use('/api/contributions', contributionRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/volunteer-ngo', volunteerNgoRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
