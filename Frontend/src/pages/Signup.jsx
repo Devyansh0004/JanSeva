@@ -79,7 +79,7 @@ const Signup = () => {
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                     <User className="h-5 w-5" style={{ color: 'var(--text-soft)' }} />
                   </div>
-                  <input type="text" required className="input-field pl-11" placeholder="John Doe" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                  <input type="text" required className="input-field input-field-icon" placeholder="John Doe" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                 </div>
               </div>
               <div>
@@ -88,7 +88,7 @@ const Signup = () => {
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                     <Mail className="h-5 w-5" style={{ color: 'var(--text-soft)' }} />
                   </div>
-                  <input type="email" required className="input-field pl-11" placeholder="you@email.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                  <input type="email" required className="input-field input-field-icon" placeholder="you@email.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
                 </div>
               </div>
               <div>
@@ -97,7 +97,7 @@ const Signup = () => {
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                     <Lock className="h-5 w-5" style={{ color: 'var(--text-soft)' }} />
                   </div>
-                  <input type="password" required className="input-field pl-11" placeholder="Create a password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                  <input type="password" required className="input-field input-field-icon" placeholder="Create a password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
                 </div>
               </div>
               <div>

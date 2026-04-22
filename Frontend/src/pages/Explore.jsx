@@ -94,7 +94,7 @@ export default function Explore() {
               <div className="flex flex-col gap-3">
                 <div className="relative">
                   <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-soft)' }} />
-                  <input className="input-field pl-11" placeholder="Search NGOs by name..." value={search} onChange={(e) => handleSearch(e.target.value)} disabled={nearbyMode} />
+                  <input className="input-field input-field-icon" placeholder="Search NGOs by name..." value={search} onChange={(e) => handleSearch(e.target.value)} disabled={nearbyMode} />
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <button onClick={nearbyMode ? () => fetchNGOs('', stateFilter, focusFilter) : handleNearby} className={nearbyMode ? 'btn-mustard' : 'btn-primary'}>

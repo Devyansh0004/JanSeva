@@ -63,18 +63,26 @@ const getRankedNGOs = asyncHandler(async (req, res) => {
   sendSuccess(res, 200, 'NGO rankings fetched', ranked);
 });
 
-// ─── GET /api/ngos/search?q= — Full-text $text index search ──────────────────
+// ─── GET /api/ngos/search?q= — Flexible Regex Search ───────────────────────────
 const searchNGOs = asyncHandler(async (req, res) => {
   const { q, state, focus } = req.query;
   if (!q || q.trim().length < 2) throw new AppError('Search query too short (min 2 chars)', 400);
 
-  const filter = { $text: { $search: q } };
-  if (state) filter.state = new RegExp(state, 'i');
+  const filter = { 
+    isVerified: true,
+    $or: [
+      { name: { $regex: q, $options: 'i' } },
+      { organizationDetails: { $regex: q, $options: 'i' } },
+      { city: { $regex: q, $options: 'i' } }
+    ]
+  };
+  
+  if (state) filter.state = new RegExp(`^${state}$`, 'i');
   if (focus) filter.focusAreas = focus;
 
-  const results = await NGO.find(filter, { score: { $meta: 'textScore' } })
-    .sort({ score: { $meta: 'textScore' } })
-    .limit(20)
+  const results = await NGO.find(filter)
+    .sort({ impactScore: -1 })
+    .limit(30)
     .lean();
 
   sendSuccess(res, 200, `Search results for "${q}"`, results);

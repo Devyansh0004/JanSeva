@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Utensils, HeartPulse, BookOpen, Home as HomeIcon, Siren, UserPlus, Users, Building2, ClipboardList, Star, CheckCircle2 } from 'lucide-react'
+import { ArrowRight, Utensils, HeartPulse, BookOpen, Home as HomeIcon, Siren, UserPlus, Users, Building2, ClipboardList, Star, CheckCircle2, Heart } from 'lucide-react'
 import AnimatedCounter from '../components/AnimatedCounter'
 import TestimonialCard from '../components/TestimonialCard'
 import IndiaMap from '../components/IndiaMap'
@@ -53,6 +53,11 @@ export default function Home() {
         <div className="container">
           <div className="hero-grid">
             <div className="hero-copy animate-fade-up">
+              <Link to="/contributions" className="inline-flex items-center gap-2 rounded-full mb-5 px-3 py-1.5 text-xs font-bold transition-all hover:-translate-y-0.5" style={{ background: 'rgba(157, 78, 221, 0.12)', color: 'var(--purple-accent)', border: '1px solid rgba(157, 78, 221, 0.25)' }}>
+                <Heart size={14} fill="currentColor" />
+                Support communities in need. Donate Now &rarr;
+              </Link>
+              <br/>
               <span className="section-label">Smart Resource Allocation</span>
               <h1 className="hero-title">
                 Calm, modern coordination for
@@ -224,6 +229,57 @@ export default function Home() {
               View All Services
               <ArrowRight size={16} />
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Work Photo Gallery */}
+      <section className="section" style={{ background: 'rgba(255,255,255,0.6)' }}>
+        <div className="container">
+          <div className="section-head">
+            <span className="section-label">On The Ground</span>
+            <h2 className="section-title mt-4">Real impact, real communities</h2>
+            <p className="section-subtitle mt-4">
+              From food distribution to education drives, JanSeva connects the people who care with the communities that need them most.
+            </p>
+          </div>
+          <div className="cards-grid-3" style={{ gap: '16px' }}>
+            <div className="glass-card overflow-hidden" style={{ padding: 0 }}>
+              <img
+                src="/social_work_food.png"
+                alt="Volunteers distributing food in a community"
+                style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block' }}
+              />
+              <div style={{ padding: '18px 20px' }}>
+                <span className="badge badge-green">Food Relief</span>
+                <p className="mt-3 text-sm font-semibold" style={{ color: 'var(--green-8)' }}>Community Food Distribution</p>
+                <p className="mt-1 text-xs leading-6" style={{ color: 'var(--text-muted)' }}>Volunteers coordinate meals for hundreds of families every week.</p>
+              </div>
+            </div>
+            <div className="glass-card overflow-hidden" style={{ padding: 0 }}>
+              <img
+                src="/social_work_medical.png"
+                alt="Medical camp for rural communities"
+                style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block' }}
+              />
+              <div style={{ padding: '18px 20px' }}>
+                <span className="badge" style={{ background: 'rgba(37,99,235,0.1)', color: 'var(--blue-accent)' }}>Healthcare</span>
+                <p className="mt-3 text-sm font-semibold" style={{ color: 'var(--green-8)' }}>Rural Medical Camps</p>
+                <p className="mt-1 text-xs leading-6" style={{ color: 'var(--text-muted)' }}>Free health checkups and medicines reaching underserved villages.</p>
+              </div>
+            </div>
+            <div className="glass-card overflow-hidden" style={{ padding: 0 }}>
+              <img
+                src="/social_work_education.png"
+                alt="Education volunteers teaching children"
+                style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block' }}
+              />
+              <div style={{ padding: '18px 20px' }}>
+                <span className="badge" style={{ background: 'rgba(220,38,38,0.1)', color: 'var(--red-accent)' }}>Education</span>
+                <p className="mt-3 text-sm font-semibold" style={{ color: 'var(--green-8)' }}>Volunteer Teaching Drives</p>
+                <p className="mt-1 text-xs leading-6" style={{ color: 'var(--text-muted)' }}>Bringing quality education to children in rural and semi-urban areas.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

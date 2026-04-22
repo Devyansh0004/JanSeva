@@ -13,7 +13,7 @@ const addContribution = asyncHandler(async (req, res) => {
   if (!ngo) throw new AppError('NGO not found', 404);
 
   const contribution = await Contribution.create({
-    userId: req.user._id,
+    userId: req.user ? req.user._id : null,
     ngoId,
     type,
     amount: amount || 0,
