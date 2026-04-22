@@ -19,6 +19,7 @@ const ngoRoutes = require('./src/routes/ngo.routes');
 const contributionRoutes = require('./src/routes/contribution.routes');
 const campaignRoutes = require('./src/routes/campaign.routes');
 const recommendationRoutes = require('./src/routes/recommendation.routes');
+const contactRoutes = require('./src/routes/contact.routes');
 
 // ─── Bootstrap DB ─────────────────────────────────────────────────────────────
 connectDB();
@@ -90,6 +91,7 @@ app.use('/api/ngos', ngoRoutes);
 app.use('/api/contributions', contributionRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/contact', contactRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use(notFound);
