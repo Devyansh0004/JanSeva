@@ -92,10 +92,21 @@ export default function VolunteerDashboard({ user }) {
 
   const canUnregister = (startDate) => {
     const timeUntilStart = new Date(startDate).getTime() - Date.now()
-    return timeUntilStart > 6 * 60 * 60 * 1000
+    return timeUntilStart > 24 * 60 * 60 * 1000
   }
 
   if (loading) return <div className="p-8 text-center">Loading dashboard...</div>
+
+  const approvedNgoIds = myNGOs
+    .filter(req => req.status === 'approved')
+    .map(req => typeof req.ngoId === 'object' ? req.ngoId._id : req.ngoId)
+
+  const filteredEvents = events.filter(event => {
+    const timeUntilStart = new Date(event.startDate).getTime() - Date.now()
+    const isFuture24h = timeUntilStart >= 24 * 60 * 60 * 1000
+    const isApprovedNgo = approvedNgoIds.includes(event.ngoId)
+    return isFuture24h && isApprovedNgo
+  })
 
   return (
     <div>
@@ -136,7 +147,10 @@ export default function VolunteerDashboard({ user }) {
             </div>
             
             <div className="space-y-4">
-              {events.map(event => {
+              {filteredEvents.length === 0 ? (
+                <p className="text-gray-500">No upcoming events available for your approved NGOs at this time.</p>
+              ) : (
+                filteredEvents.map(event => {
                 const isRegistered = myEvents.includes(event._id)
                 const _canUnregister = canUnregister(event.startDate)
 
@@ -161,7 +175,7 @@ export default function VolunteerDashboard({ user }) {
                           onClick={() => unregisterEvent(event._id)}
                           disabled={!_canUnregister}
                           className={`btn-outline ${!_canUnregister ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          title={!_canUnregister ? "Cannot unregister within 6 hours" : ""}
+                          title={!_canUnregister ? "Cannot unregister within 24 hours" : ""}
                         >
                           Unregister
                         </button>
@@ -173,7 +187,7 @@ export default function VolunteerDashboard({ user }) {
                     </div>
                   </div>
                 )
-              })}
+              }))}
             </div>
           </div>
 

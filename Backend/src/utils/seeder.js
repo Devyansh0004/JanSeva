@@ -11,6 +11,7 @@ const Volunteer = require('../models/Volunteer');
 const NGO = require('../models/NGO');
 const Contribution = require('../models/Contribution');
 const Campaign = require('../models/Campaign');
+const VolunteerNGO = require('../models/VolunteerNGO');
 const connectDB = require('../config/db');
 const logger = require('./logger');
 
@@ -79,12 +80,13 @@ const seed = async () => {
     NGO.deleteMany({}),
     Contribution.deleteMany({}),
     Campaign.deleteMany({}),
+    VolunteerNGO.deleteMany({}),
   ]);
 
   // ── Create Admin ──────────────────────────────────────────────────────────
   const admin = await User.create({
     name: 'Admin User',
-    email: 'admin@janseva.org',
+    email: 'admin@gmail.com',
     password: 'Admin@1234',
     role: 'admin',
   });
@@ -99,8 +101,8 @@ const seed = async () => {
     const emailSlug = ngo.name.toLowerCase().replace(/[^a-z0-9]/g, '');
     const user = await User.create({
       name: ngo.name,
-      email: `${emailSlug}@ngo.org`,
-      password: 'Password@1',
+      email: `${emailSlug}@gmail.com`,
+      password: 'Password@1234',
       role: 'ngo',
     });
     ngoUsers.push(user);
@@ -143,12 +145,12 @@ const seed = async () => {
   for (let i = 1; i <= 40; i++) {
     volunteerUsers.push({
       name: `Volunteer ${i}`,
-      email: `volunteer${i}@test.com`,
-      password: 'Password@1',
+      email: `volunteer${i}@gmail.com`,
+      password: 'Password@1234',
       role: 'volunteer',
     });
   }
-  const createdVols = await User.insertMany(volunteerUsers);
+  const createdVols = await Promise.all(volunteerUsers.map(u => User.create(u)));
 
   const volunteerProfiles = createdVols.map((u) => {
     const state = randomFrom(INDIAN_STATES);
@@ -167,17 +169,30 @@ const seed = async () => {
   await Volunteer.insertMany(volunteerProfiles);
   logger.info(`${createdVols.length} Volunteers created`);
 
+  // ── Create Volunteer-NGO Approved Relationships ───────────────────────────
+  const ngoSeva = insertedNGOs.find(n => n.name === 'Seva Foundation');
+  const ngoHelpHand = insertedNGOs.find(n => n.name === 'HelpHand Trust');
+  
+  if (ngoSeva && ngoHelpHand) {
+    await VolunteerNGO.insertMany([
+      { volunteerId: createdVols[0]._id, ngoId: ngoSeva._id, status: 'approved', respondedAt: new Date() },
+      { volunteerId: createdVols[0]._id, ngoId: ngoHelpHand._id, status: 'approved', respondedAt: new Date() },
+      { volunteerId: createdVols[1]._id, ngoId: ngoSeva._id, status: 'approved', respondedAt: new Date() },
+    ]);
+    logger.info(`Seeded VolunteerNGO relationships for testing`);
+  }
+
   // ── Create Regular Users ──────────────────────────────────────────────────
   const regularUsers = [];
   for (let i = 1; i <= 20; i++) {
     regularUsers.push({
       name: `User ${i}`,
-      email: `user${i}@test.com`,
-      password: 'Password@1',
+      email: `user${i}@gmail.com`,
+      password: 'Password@1234',
       role: 'user',
     });
   }
-  const createdUsers = await User.insertMany(regularUsers);
+  const createdUsers = await Promise.all(regularUsers.map(u => User.create(u)));
   logger.info(`${createdUsers.length} Regular users created`);
 
   // ── Create Service Requests ───────────────────────────────────────────────
@@ -244,6 +259,43 @@ const seed = async () => {
     'Emergency Response Training',
   ];
   const campaigns = [];
+
+  // Seed Future Campaigns for Testing
+  if (ngoSeva && ngoHelpHand) {
+    campaigns.push({
+      ngoId: ngoSeva._id,
+      title: 'Future Medical Camp 2026',
+      description: 'A future medical camp for the volunteers to register.',
+      category: 'Medical',
+      targetAmount: 100000,
+      raisedAmount: 5000,
+      volunteerTarget: 20,
+      volunteers: [],
+      startDate: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000), // +3 days
+      endDate: new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000),
+      status: 'Active',
+      state: ngoSeva.state,
+      city: ngoSeva.city,
+      ngoSummary: { name: ngoSeva.name, city: ngoSeva.city, state: ngoSeva.state },
+    });
+    campaigns.push({
+      ngoId: ngoHelpHand._id,
+      title: 'Upcoming Education Drive',
+      description: 'A future education drive for volunteers.',
+      category: 'Education',
+      targetAmount: 50000,
+      raisedAmount: 2000,
+      volunteerTarget: 30,
+      volunteers: [],
+      startDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000), // +5 days
+      endDate: new Date(now.getTime() + 12 * 24 * 60 * 60 * 1000),
+      status: 'Upcoming',
+      state: ngoHelpHand.state,
+      city: ngoHelpHand.city,
+      ngoSummary: { name: ngoHelpHand.name, city: ngoHelpHand.city, state: ngoHelpHand.state },
+    });
+  }
+
   for (let i = 0; i < 20; i++) {
     const ngo = insertedNGOs[i % insertedNGOs.length];
     const ngoData = NGO_DATA[i % NGO_DATA.length];
@@ -276,10 +328,10 @@ const seed = async () => {
   logger.info('✅ Database seeding v2.0 complete!');
   logger.info('──────────────────────────────────────');
   logger.info('Test Credentials:');
-  logger.info('  Admin:     admin@janseva.org     / Admin@1234');
-  logger.info('  NGO:       sevafoundation@ngo.org / Password@1');
-  logger.info('  Volunteer: volunteer1@test.com   / Password@1');
-  logger.info('  User:      user1@test.com        / Password@1');
+  logger.info('  Admin:     admin@gmail.com        / Admin@1234');
+  logger.info('  NGO:       sevafoundation@gmail.com / Password@1234');
+  logger.info('  Volunteer: volunteer1@gmail.com   / Password@1234');
+  logger.info('  User:      user1@gmail.com        / Password@1234');
   logger.info('──────────────────────────────────────');
 
   await mongoose.connection.close();

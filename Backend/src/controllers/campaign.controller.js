@@ -63,10 +63,10 @@ const leaveCampaign = asyncHandler(async (req, res) => {
   const campaign = await Campaign.findById(req.params.id);
   if (!campaign) throw new AppError('Campaign not found', 404);
 
-  // Check 6h cutoff
+  // Check 24h cutoff
   const timeUntilStart = new Date(campaign.startDate).getTime() - Date.now();
-  if (timeUntilStart > 0 && timeUntilStart < 6 * 60 * 60 * 1000) {
-    throw new AppError('Cannot unregister within 6 hours of event start', 400);
+  if (timeUntilStart > 0 && timeUntilStart < 24 * 60 * 60 * 1000) {
+    throw new AppError('Cannot unregister within 24 hours of event start', 400);
   }
 
   campaign.volunteers = campaign.volunteers.filter(v => v.toString() !== req.user._id.toString());
