@@ -32,7 +32,7 @@ export default function CampaignDetails() {
   if (loading) return <div className="p-12 text-center text-gray-500 font-bold">Loading Campaign Data...</div>
   if (!data) return <div className="p-12 text-center text-red-500 font-bold">Campaign not found</div>
 
-  const { campaign, assignments, rawSurvey } = data
+  const { campaign, assignments, rawSurvey, registeredVolunteers } = data;
 
   return (
     <div className="bg-gray-50 min-h-screen pb-12">
@@ -86,6 +86,12 @@ export default function CampaignDetails() {
             onClick={() => setActiveTab('raw_data')}
           >
             <Database size={18} /> Raw Survey Data
+          </button>
+          <button 
+            className={`font-bold pb-2 border-b-2 flex items-center gap-2 px-2 transition ${activeTab === 'volunteers' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-800'}`}
+            onClick={() => setActiveTab('volunteers')}
+          >
+            <Users size={18} /> Registered Volunteers
           </button>
         </div>
 
@@ -226,6 +232,57 @@ export default function CampaignDetails() {
                         <td className="p-3 border-r text-right text-orange-600">{village.food?.score?.toFixed(1) || 'N/A'}</td>
                         <td className="p-3 border-r text-right text-green-600">{village.education?.score?.toFixed(1) || 'N/A'}</td>
                         <td className="p-3 border-r text-right text-purple-600">{village.shelter?.score?.toFixed(1) || 'N/A'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'volunteers' && (
+          <div>
+            <h2 className="text-2xl font-extrabold mb-4">Registered Volunteers</h2>
+            {!registeredVolunteers || registeredVolunteers.length === 0 ? (
+              <div className="bg-white p-12 text-center rounded-2xl border text-gray-500">
+                No volunteers have registered for this campaign yet.
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                <table className="w-full text-left border-collapse text-sm">
+                  <thead>
+                    <tr className="bg-gray-800 text-gray-100 uppercase tracking-wider text-xs">
+                      <th className="p-4 border-r border-gray-700">Name</th>
+                      <th className="p-4 border-r border-gray-700">Email</th>
+                      <th className="p-4 border-r border-gray-700 text-center">Hours</th>
+                      <th className="p-4">Primary Domains</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {registeredVolunteers.map((vol, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50">
+                        <td className="p-4 border-r font-bold flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 text-white flex items-center justify-center font-bold">
+                            {vol.name.charAt(0)}
+                          </div>
+                          {vol.name}
+                        </td>
+                        <td className="p-4 border-r text-gray-600">{vol.email}</td>
+                        <td className="p-4 border-r text-center font-mono font-bold text-blue-600">{vol.hours}</td>
+                        <td className="p-4">
+                          <div className="flex flex-wrap gap-1">
+                            {vol.domains && vol.domains.length > 0 ? (
+                              vol.domains.map((d, dIdx) => (
+                                <span key={dIdx} className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full uppercase">
+                                  {d}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-gray-400 text-xs italic">No domains</span>
+                            )}
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

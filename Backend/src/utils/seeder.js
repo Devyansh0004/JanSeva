@@ -11,6 +11,7 @@ const Volunteer = require('../models/Volunteer');
 const NGO = require('../models/NGO');
 const Contribution = require('../models/Contribution');
 const Campaign = require('../models/Campaign');
+const VolunteerNGO = require('../models/VolunteerNGO');
 const connectDB = require('../config/db');
 const logger = require('./logger');
 
@@ -87,12 +88,13 @@ const seed = async () => {
     NGO.deleteMany({}),
     Contribution.deleteMany({}),
     Campaign.deleteMany({}),
+    VolunteerNGO.deleteMany({}),
   ]);
 
   // ── Create Admin ──────────────────────────────────────────────────────────
   const admin = await User.create({
     name: 'Admin User',
-    email: 'admin@janseva.org',
+    email: 'admin@gmail.com',
     password: 'Admin@1234',
     role: 'admin',
   });
@@ -107,8 +109,8 @@ const seed = async () => {
     const emailSlug = ngo.name.toLowerCase().replace(/[^a-z0-9]/g, '');
     const user = await User.create({
       name: ngo.name,
-      email: `${emailSlug}@ngo.org`,
-      password: 'Password@1',
+      email: `${emailSlug}@gmail.com`,
+      password: 'Password@1234',
       role: 'ngo',
     });
     ngoUsers.push(user);
@@ -148,15 +150,15 @@ const seed = async () => {
 
   // ── Create Volunteers ─────────────────────────────────────────────────────
   const volunteerUsers = [];
-  for (let i = 1; i <= 40; i++) {
+  for (let i = 1; i <= 100; i++) {
     volunteerUsers.push({
       name: `Volunteer ${i}`,
-      email: `volunteer${i}@test.com`,
-      password: 'Password@1',
+      email: `volunteer${i}@gmail.com`,
+      password: 'Password@1234',
       role: 'volunteer',
     });
   }
-  const createdVols = await User.insertMany(volunteerUsers);
+  const createdVols = await Promise.all(volunteerUsers.map(u => User.create(u)));
 
   const volunteerProfiles = createdVols.map((u) => {
     const state = randomFrom(INDIAN_STATES);
@@ -178,17 +180,31 @@ const seed = async () => {
   await Volunteer.insertMany(volunteerProfiles);
   logger.info(`${createdVols.length} Volunteers created`);
 
+  // ── Create Volunteer-NGO Approved Relationships ───────────────────────────
+  const top3NGOs = insertedNGOs.slice(0, 3);
+  
+  const volunteerNGORels = [];
+  for (let i = 0; i < 100; i++) {
+    const vol = createdVols[i];
+    const ngo1 = top3NGOs[i % 3];
+    const ngo2 = top3NGOs[(i + 1) % 3];
+    volunteerNGORels.push({ volunteerId: vol._id, ngoId: ngo1._id, status: 'approved', respondedAt: new Date() });
+    volunteerNGORels.push({ volunteerId: vol._id, ngoId: ngo2._id, status: 'approved', respondedAt: new Date() });
+  }
+  await VolunteerNGO.insertMany(volunteerNGORels);
+  logger.info(`Seeded VolunteerNGO relationships for first 10 volunteers`);
+
   // ── Create Regular Users ──────────────────────────────────────────────────
   const regularUsers = [];
   for (let i = 1; i <= 20; i++) {
     regularUsers.push({
       name: `User ${i}`,
-      email: `user${i}@test.com`,
-      password: 'Password@1',
+      email: `user${i}@gmail.com`,
+      password: 'Password@1234',
       role: 'user',
     });
   }
-  const createdUsers = await User.insertMany(regularUsers);
+  const createdUsers = await Promise.all(regularUsers.map(u => User.create(u)));
   logger.info(`${createdUsers.length} Regular users created`);
 
   // ── Create Service Requests ───────────────────────────────────────────────
@@ -255,6 +271,53 @@ const seed = async () => {
     'Emergency Response Training',
   ];
   const campaigns = [];
+
+  // Seed Future Campaigns for Testing
+  top3NGOs.forEach((ngo, index) => {
+    // Register 5-15 volunteers to this campaign
+    const numVols = randomInt(5, 15);
+    const registeredVols = createdVols.slice(index * 15, index * 15 + numVols).map(v => v._id);
+
+    campaigns.push({
+      ngoId: ngo._id,
+      title: `Future Campaign ${index + 1} for ${ngo.name}`,
+      description: `A future event for ${ngo.name} volunteers to register.`,
+      category: CATEGORIES[index % CATEGORIES.length],
+      targetAmount: 100000 + (index * 10000),
+      raisedAmount: 5000,
+      volunteerTarget: 20 + index,
+      volunteers: registeredVols,
+      startDate: new Date(now.getTime() + (index + 2) * 24 * 60 * 60 * 1000), // +2 to +6 days
+      endDate: new Date(now.getTime() + (index + 10) * 24 * 60 * 60 * 1000),
+      status: 'Active',
+      state: ngo.state,
+      city: ngo.city,
+      ngoSummary: { name: ngo.name, city: ngo.city, state: ngo.state },
+    });
+  });
+
+  // Create 4th Future Campaign for NGO 1
+  if (top3NGOs.length > 0) {
+    const ngo = top3NGOs[0];
+    const registeredVols = createdVols.slice(60, 75).map(v => v._id);
+    campaigns.push({
+      ngoId: ngo._id,
+      title: `Extra Future Campaign for ${ngo.name}`,
+      description: `Another future event for ${ngo.name} volunteers to register.`,
+      category: CATEGORIES[3 % CATEGORIES.length],
+      targetAmount: 150000,
+      raisedAmount: 5000,
+      volunteerTarget: 30,
+      volunteers: registeredVols,
+      startDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // +7 days
+      endDate: new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000),
+      status: 'Active',
+      state: ngo.state,
+      city: ngo.city,
+      ngoSummary: { name: ngo.name, city: ngo.city, state: ngo.state },
+    });
+  }
+
   for (let i = 0; i < 20; i++) {
     const ngo = insertedNGOs[i % insertedNGOs.length];
     const ngoData = NGO_DATA[i % NGO_DATA.length];
@@ -287,10 +350,15 @@ const seed = async () => {
   logger.info('✅ Database seeding v2.0 complete!');
   logger.info('──────────────────────────────────────');
   logger.info('Test Credentials:');
-  logger.info('  Admin:     admin@janseva.org     / Admin@1234');
-  logger.info('  NGO:       sevafoundation@ngo.org / Password@1');
-  logger.info('  Volunteer: volunteer1@test.com   / Password@1');
-  logger.info('  User:      user1@test.com        / Password@1');
+  logger.info('  Admin:     admin@gmail.com        / Admin@1234');
+  logger.info('  --- NGOs ---');
+  for(let i = 0; i < 5; i++) {
+    logger.info(`  NGO ${i+1}:      ${ngoUsers[i].email} / Password@1234`);
+  }
+  logger.info('  --- Volunteers ---');
+  for(let i = 0; i < 10; i++) {
+    logger.info(`  Volunteer ${i+1}: ${createdVols[i].email} / Password@1234`);
+  }
   logger.info('──────────────────────────────────────');
 
   await mongoose.connection.close();
