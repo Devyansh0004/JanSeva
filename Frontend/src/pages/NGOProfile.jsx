@@ -189,7 +189,7 @@ export default function NGOProfile() {
                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                     <Phone className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input type="text" required className="input-field input-field-icon" value={formData['contactInfo.phone']} onChange={e => setFormData({...formData, 'contactInfo.phone': e.target.value})} />
+                  <input type="tel" required pattern="^[0-9]{10}$" title="Phone number must be exactly 10 digits" className="input-field input-field-icon" value={formData['contactInfo.phone']} onChange={e => setFormData({...formData, 'contactInfo.phone': e.target.value})} />
                 </div>
               </div>
 

@@ -124,6 +124,9 @@ export default function VolunteerProfile() {
                   className="input-field input-field-icon" 
                   value={formData.email} 
                   onChange={e => setFormData({...formData, email: e.target.value})} 
+                  required 
+                  pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                  title="Please enter a valid email address"
                 />
               </div>
             </div>
