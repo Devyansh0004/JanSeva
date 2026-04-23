@@ -46,9 +46,14 @@ const sendOtp = asyncHandler(async (req, res, next) => {
   await Otp.create({ email, otp: otpCode });
 
   // Send OTP email
-  const sent = await sendOtpEmail(email, otpCode, name);
-  if (!sent) {
-    return next(new AppError('Unable to send OTP email. Please ensure SMTP is configured in Backend/.env', 500));
+  try {
+    const sent = await sendOtpEmail(email, otpCode, name);
+    if (!sent) {
+      return next(new AppError('Unable to send OTP email. Please ensure SMTP is configured in Backend/.env', 500));
+    }
+  } catch (emailErr) {
+    logger.error(`OTP email failed: ${emailErr.message}`);
+    return next(new AppError(`Failed to send verification email: ${emailErr.message}`, 500));
   }
 
   logger.info(`OTP sent to ${email} for ${role || 'volunteer'} signup`);
