@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Building2, MapPin, Phone, Mail, Trash2, AlertTriangle, Save, ArrowLeft } from 'lucide-react'
+import { Building2, MapPin, Phone, Mail, Trash2, AlertTriangle, Save, ArrowLeft, BadgeCheck, Clock } from 'lucide-react'
 
 const API = 'http://localhost:5000/api'
 
@@ -99,6 +99,14 @@ export default function NGOProfile() {
     }
   }
 
+  const handleBackToDashboard = () => {
+    if (profile && profile.approvalStatus !== 'approved') {
+      alert("Your NGO is not verified yet. Please contact admin.");
+    } else {
+      navigate('/dashboard');
+    }
+  }
+
   const handleDelete = async () => {
     try {
       const res = await fetch(`${API}/ngos/profile`, { method: 'DELETE', headers })
@@ -124,7 +132,7 @@ export default function NGOProfile() {
 
   if (loading) return <div className="p-8 text-center">Loading profile...</div>
 
-  const isFirstTimeOnboarding = profile && profile.approvalStatus === 'approved' && !profile.isProfileComplete
+  const isFirstTimeOnboarding = profile && !profile.isProfileComplete
 
   return (
     <section className="section">
@@ -132,14 +140,27 @@ export default function NGOProfile() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <span className="section-label mb-4">Settings</span>
-            <h1 className="text-3xl font-bold text-gray-900 mt-2">
-              {isFirstTimeOnboarding ? 'Complete Your NGO Profile' : 'NGO Profile'}
-            </h1>
+            <div className="flex items-center gap-4 mt-2">
+              <h1 className="text-3xl font-bold text-gray-900">
+                {isFirstTimeOnboarding ? 'Complete Your NGO Profile' : 'NGO Profile'}
+              </h1>
+              {!isFirstTimeOnboarding && profile && (
+                profile.approvalStatus === 'approved' ? (
+                  <span className="flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 text-sm font-bold rounded-full border border-green-200">
+                    <BadgeCheck size={16} /> Verified
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 px-3 py-1 bg-yellow-100 text-yellow-700 text-sm font-bold rounded-full border border-yellow-200">
+                    <Clock size={16} /> Pending Verification
+                  </span>
+                )
+              )}
+            </div>
             {isFirstTimeOnboarding && (
-              <p className="text-gray-600 mt-2">Please fill in all your details to activate your dashboard.</p>
+              <p className="text-gray-600 mt-2">Please fill the details and save and apply for verification from admin.</p>
             )}
           </div>
-          <button onClick={() => navigate('/dashboard')} className="btn-outline flex items-center gap-2">
+          <button onClick={handleBackToDashboard} className="btn-outline flex items-center gap-2">
             <ArrowLeft size={16} /> Back to Dashboard
           </button>
         </div>
@@ -224,7 +245,7 @@ export default function NGOProfile() {
 
             <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
               <button type="submit" disabled={saving} className="btn-primary">
-                {saving ? 'Saving...' : <><Save size={18} /> {isFirstTimeOnboarding ? 'Submit Profile' : 'Save Profile'}</>}
+                {saving ? 'Saving...' : <><Save size={18} /> {isFirstTimeOnboarding ? 'Save & Apply for Verification' : 'Save Profile'}</>}
               </button>
             </div>
           </form>

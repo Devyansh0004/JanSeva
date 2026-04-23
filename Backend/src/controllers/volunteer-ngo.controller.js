@@ -1,5 +1,6 @@
 const VolunteerNGO = require('../models/VolunteerNGO');
 const NGO = require('../models/NGO');
+const Volunteer = require('../models/Volunteer');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const { sendSuccess } = require('../utils/apiResponse');
@@ -60,6 +61,39 @@ const getPendingRequests = asyncHandler(async (req, res, next) => {
   sendSuccess(res, 200, 'Fetched pending requests', requests);
 });
 
+// @desc    NGO gets approved volunteers
+// @route   GET /api/volunteer-ngo/approved
+// @access  Private (NGO)
+const getApprovedVolunteers = asyncHandler(async (req, res, next) => {
+  const ngo = await NGO.findOne({ userId: req.user._id });
+  if (!ngo) {
+    return next(new AppError('NGO profile not found', 404));
+  }
+
+  const approved = await VolunteerNGO.find({ ngoId: ngo._id, status: 'approved' })
+    .populate('volunteerId', 'name email avatar')
+    .sort('-respondedAt');
+  
+  // We should also fetch the volunteer profiles to attach total hours, but for simplicity of the UI we can just return the user relation first.
+  // Actually, to make it easier to show their current hours, let's fetch Volunteer documents:
+  const volunteerUserIds = approved.map(req => req.volunteerId._id);
+  const volunteerProfiles = await Volunteer.find({ userId: { $in: volunteerUserIds } }).lean();
+  
+  // Map profiles to requests
+  const responseData = approved.map(request => {
+    const profile = volunteerProfiles.find(p => p.userId.toString() === request.volunteerId._id.toString());
+    return {
+      _id: request._id,
+      volunteerId: request.volunteerId,
+      status: request.status,
+      respondedAt: request.respondedAt,
+      volunteeringHours: profile ? profile.volunteeringHours : 0
+    };
+  });
+
+  sendSuccess(res, 200, 'Fetched approved volunteers', responseData);
+});
+
 // @desc    NGO approves a volunteer request
 // @route   PATCH /api/volunteer-ngo/:id/approve
 // @access  Private (NGO)
@@ -102,10 +136,49 @@ const rejectRequest = asyncHandler(async (req, res, next) => {
   sendSuccess(res, 200, 'Request rejected', request);
 });
 
+// @desc    NGO assigns hours to a volunteer
+// @route   POST /api/volunteer-ngo/:volunteerId/assign-hours
+// @access  Private (NGO)
+const assignHours = asyncHandler(async (req, res, next) => {
+  const { hours } = req.body;
+  if (!hours || isNaN(hours) || Number(hours) <= 0) {
+    return next(new AppError('Please provide a valid number of hours', 400));
+  }
+
+  const ngo = await NGO.findOne({ userId: req.user._id });
+  if (!ngo) return next(new AppError('NGO profile not found', 404));
+
+  // Verify that the volunteer is actually approved for this NGO
+  const relation = await VolunteerNGO.findOne({
+    ngoId: ngo._id,
+    volunteerId: req.params.volunteerId,
+    status: 'approved'
+  });
+
+  if (!relation) {
+    return next(new AppError('You can only assign hours to approved volunteers', 403));
+  }
+
+  // Find the Volunteer profile using the userId explicitly
+  const volunteerProfile = await Volunteer.findOne({ userId: req.params.volunteerId });
+  if (!volunteerProfile) {
+    return next(new AppError('Volunteer profile not found', 404));
+  }
+
+  volunteerProfile.volunteeringHours += Number(hours);
+  await volunteerProfile.save();
+
+  sendSuccess(res, 200, `Successfully assigned ${hours} hours to volunteer`, {
+    volunteeringHours: volunteerProfile.volunteeringHours
+  });
+});
+
 module.exports = {
   requestToJoinNGO,
   getMyNGOs,
   getPendingRequests,
+  getApprovedVolunteers,
   approveRequest,
-  rejectRequest
+  rejectRequest,
+  assignHours
 };
