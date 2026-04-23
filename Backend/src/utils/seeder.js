@@ -150,7 +150,7 @@ const seed = async () => {
 
   // ── Create Volunteers ─────────────────────────────────────────────────────
   const volunteerUsers = [];
-  for (let i = 1; i <= 40; i++) {
+  for (let i = 1; i <= 100; i++) {
     volunteerUsers.push({
       name: `Volunteer ${i}`,
       email: `volunteer${i}@gmail.com`,
@@ -181,17 +181,18 @@ const seed = async () => {
   logger.info(`${createdVols.length} Volunteers created`);
 
   // ── Create Volunteer-NGO Approved Relationships ───────────────────────────
-  const ngoSeva = insertedNGOs.find(n => n.name === 'Seva Foundation');
-  const ngoHelpHand = insertedNGOs.find(n => n.name === 'HelpHand Trust');
+  const top3NGOs = insertedNGOs.slice(0, 3);
   
-  if (ngoSeva && ngoHelpHand) {
-    await VolunteerNGO.insertMany([
-      { volunteerId: createdVols[0]._id, ngoId: ngoSeva._id, status: 'approved', respondedAt: new Date() },
-      { volunteerId: createdVols[0]._id, ngoId: ngoHelpHand._id, status: 'approved', respondedAt: new Date() },
-      { volunteerId: createdVols[1]._id, ngoId: ngoSeva._id, status: 'approved', respondedAt: new Date() },
-    ]);
-    logger.info(`Seeded VolunteerNGO relationships for testing`);
+  const volunteerNGORels = [];
+  for (let i = 0; i < 100; i++) {
+    const vol = createdVols[i];
+    const ngo1 = top3NGOs[i % 3];
+    const ngo2 = top3NGOs[(i + 1) % 3];
+    volunteerNGORels.push({ volunteerId: vol._id, ngoId: ngo1._id, status: 'approved', respondedAt: new Date() });
+    volunteerNGORels.push({ volunteerId: vol._id, ngoId: ngo2._id, status: 'approved', respondedAt: new Date() });
   }
+  await VolunteerNGO.insertMany(volunteerNGORels);
+  logger.info(`Seeded VolunteerNGO relationships for first 10 volunteers`);
 
   // ── Create Regular Users ──────────────────────────────────────────────────
   const regularUsers = [];
@@ -272,38 +273,48 @@ const seed = async () => {
   const campaigns = [];
 
   // Seed Future Campaigns for Testing
-  if (ngoSeva && ngoHelpHand) {
+  top3NGOs.forEach((ngo, index) => {
+    // Register 5-15 volunteers to this campaign
+    const numVols = randomInt(5, 15);
+    const registeredVols = createdVols.slice(index * 15, index * 15 + numVols).map(v => v._id);
+
     campaigns.push({
-      ngoId: ngoSeva._id,
-      title: 'Future Medical Camp 2026',
-      description: 'A future medical camp for the volunteers to register.',
-      category: 'Medical',
-      targetAmount: 100000,
+      ngoId: ngo._id,
+      title: `Future Campaign ${index + 1} for ${ngo.name}`,
+      description: `A future event for ${ngo.name} volunteers to register.`,
+      category: CATEGORIES[index % CATEGORIES.length],
+      targetAmount: 100000 + (index * 10000),
       raisedAmount: 5000,
-      volunteerTarget: 20,
-      volunteers: [],
-      startDate: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000), // +3 days
-      endDate: new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000),
+      volunteerTarget: 20 + index,
+      volunteers: registeredVols,
+      startDate: new Date(now.getTime() + (index + 2) * 24 * 60 * 60 * 1000), // +2 to +6 days
+      endDate: new Date(now.getTime() + (index + 10) * 24 * 60 * 60 * 1000),
       status: 'Active',
-      state: ngoSeva.state,
-      city: ngoSeva.city,
-      ngoSummary: { name: ngoSeva.name, city: ngoSeva.city, state: ngoSeva.state },
+      state: ngo.state,
+      city: ngo.city,
+      ngoSummary: { name: ngo.name, city: ngo.city, state: ngo.state },
     });
+  });
+
+  // Create 4th Future Campaign for NGO 1
+  if (top3NGOs.length > 0) {
+    const ngo = top3NGOs[0];
+    const registeredVols = createdVols.slice(60, 75).map(v => v._id);
     campaigns.push({
-      ngoId: ngoHelpHand._id,
-      title: 'Upcoming Education Drive',
-      description: 'A future education drive for volunteers.',
-      category: 'Education',
-      targetAmount: 50000,
-      raisedAmount: 2000,
+      ngoId: ngo._id,
+      title: `Extra Future Campaign for ${ngo.name}`,
+      description: `Another future event for ${ngo.name} volunteers to register.`,
+      category: CATEGORIES[3 % CATEGORIES.length],
+      targetAmount: 150000,
+      raisedAmount: 5000,
       volunteerTarget: 30,
-      volunteers: [],
-      startDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000), // +5 days
-      endDate: new Date(now.getTime() + 12 * 24 * 60 * 60 * 1000),
-      status: 'Upcoming',
-      state: ngoHelpHand.state,
-      city: ngoHelpHand.city,
-      ngoSummary: { name: ngoHelpHand.name, city: ngoHelpHand.city, state: ngoHelpHand.state },
+      volunteers: registeredVols,
+      startDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // +7 days
+      endDate: new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000),
+      status: 'Active',
+      state: ngo.state,
+      city: ngo.city,
+      ngoSummary: { name: ngo.name, city: ngo.city, state: ngo.state },
     });
   }
 
@@ -340,9 +351,14 @@ const seed = async () => {
   logger.info('──────────────────────────────────────');
   logger.info('Test Credentials:');
   logger.info('  Admin:     admin@gmail.com        / Admin@1234');
-  logger.info('  NGO:       sevafoundation@gmail.com / Password@1234');
-  logger.info('  Volunteer: volunteer1@gmail.com   / Password@1234');
-  logger.info('  User:      user1@gmail.com        / Password@1234');
+  logger.info('  --- NGOs ---');
+  for(let i = 0; i < 5; i++) {
+    logger.info(`  NGO ${i+1}:      ${ngoUsers[i].email} / Password@1234`);
+  }
+  logger.info('  --- Volunteers ---');
+  for(let i = 0; i < 10; i++) {
+    logger.info(`  Volunteer ${i+1}: ${createdVols[i].email} / Password@1234`);
+  }
   logger.info('──────────────────────────────────────');
 
   await mongoose.connection.close();

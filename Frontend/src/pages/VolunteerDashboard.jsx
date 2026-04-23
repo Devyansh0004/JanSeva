@@ -12,6 +12,7 @@ export default function VolunteerDashboard({ user }) {
   const [allNGOs, setAllNGOs] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAddNGO, setShowAddNGO] = useState(false)
+  const [searchNGO, setSearchNGO] = useState('')
 
   const token = localStorage.getItem('janseva_token')
   const headers = { Authorization: `Bearer ${token}` }
@@ -108,6 +109,10 @@ export default function VolunteerDashboard({ user }) {
     return isFuture24h && isApprovedNgo
   })
 
+  const filteredAllNGOs = allNGOs.filter(ngo => 
+    ngo.name.toLowerCase().includes(searchNGO.toLowerCase())
+  )
+
   return (
     <div>
       <section className="page-hero">
@@ -202,14 +207,27 @@ export default function VolunteerDashboard({ user }) {
 
               {showAddNGO && (
                 <div className="mb-6 p-4 rounded-xl bg-gray-50 border">
-                  <h3 className="text-sm font-bold mb-3">Select an NGO to join:</h3>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-bold">Select an NGO to join:</h3>
+                    <input 
+                      type="text" 
+                      placeholder="Search NGOs..." 
+                      className="text-xs p-2 rounded border border-gray-300 w-48 focus:outline-none focus:border-green-500"
+                      value={searchNGO}
+                      onChange={(e) => setSearchNGO(e.target.value)}
+                    />
+                  </div>
                   <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {allNGOs.map(ngo => (
-                      <div key={ngo._id} className="flex items-center justify-between p-2 hover:bg-white rounded border">
-                        <span className="text-sm font-semibold">{ngo.name}</span>
-                        <button onClick={() => requestJoinNGO(ngo._id)} className="btn-primary py-1 min-h-0 text-xs">Join</button>
-                      </div>
-                    ))}
+                    {filteredAllNGOs.length === 0 ? (
+                      <p className="text-xs text-gray-500">No NGOs match your search.</p>
+                    ) : (
+                      filteredAllNGOs.map(ngo => (
+                        <div key={ngo._id} className="flex items-center justify-between p-2 hover:bg-white rounded border">
+                          <span className="text-sm font-semibold">{ngo.name}</span>
+                          <button onClick={() => requestJoinNGO(ngo._id)} className="btn-primary py-1 min-h-0 text-xs">Join</button>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}

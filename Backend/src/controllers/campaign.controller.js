@@ -53,6 +53,17 @@ const joinCampaign = asyncHandler(async (req, res) => {
   const alreadyJoined = campaign.volunteers.some(v => v.toString() === req.user._id.toString());
   if (alreadyJoined) throw new AppError('You have already joined this campaign', 400);
 
+  // Same Day Constraint
+  const userCampaigns = await Campaign.find({
+    volunteers: req.user._id,
+    status: { $in: ['Active', 'Upcoming'] }
+  });
+  const campaignDateStr = new Date(campaign.startDate).toDateString();
+  const sameDayConflict = userCampaigns.find(c => new Date(c.startDate).toDateString() === campaignDateStr);
+  if (sameDayConflict) {
+    throw new AppError('You are already registered for another campaign on this exact same date.', 400);
+  }
+
   campaign.volunteers.push(req.user._id);
   await campaign.save();
   sendSuccess(res, 200, 'Joined campaign successfully', { volunteersCount: campaign.volunteers.length });
@@ -101,6 +112,7 @@ const getNgoCampaigns = asyncHandler(async (req, res) => {
     const cAssigns = assignments.filter(a => a.campaignId.toString() === c._id.toString());
     return {
       ...c,
+      registeredVolunteers: c.volunteers ? c.volunteers.length : 0,
       villagesAided: cAssigns.length,
       assignedVolunteers: cAssigns.reduce((sum, a) => sum + a.volunteers_assigned.length, 0)
     };
@@ -428,7 +440,25 @@ const getCampaignDetailsNGO = asyncHandler(async (req, res) => {
   const Village = require('../models/Village');
   const rawSurvey = await Village.find({ campaignId: campaign._id }).lean();
 
-  sendSuccess(res, 200, 'Detailed campaign fetched', { campaign, assignments: detailedAssignments, rawSurvey });
+  // Also fetch all registered volunteers and their domains
+  const registeredUserIds = campaign.volunteers || [];
+  const registeredVolsRaw = await Volunteer.find({ userId: { $in: registeredUserIds } })
+    .populate('userId', 'name email')
+    .lean();
+    
+  const registeredVolunteers = registeredVolsRaw.map(v => ({
+    name: v.userId?.name || 'Unknown',
+    email: v.userId?.email || 'Unknown',
+    domains: v.domains || [],
+    hours: v.volunteeringHours
+  }));
+
+  sendSuccess(res, 200, 'Detailed campaign fetched', { 
+    campaign, 
+    assignments: detailedAssignments, 
+    rawSurvey,
+    registeredVolunteers
+  });
 });
 
 module.exports = { getCampaigns, createCampaign, createCampaignWithSurvey, joinCampaign, leaveCampaign, getMyCampaigns, getNgoCampaigns, getCampaignById, getCampaignDetailsNGO, getCampaignStats };

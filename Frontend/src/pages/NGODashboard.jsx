@@ -231,8 +231,8 @@ export default function NGODashboard({ user }) {
                         </div>
                         <div className="w-px h-8 bg-gray-200"></div>
                         <div className="text-center">
-                          <p className="font-bold text-green-600">{camp.assignedVolunteers || 0}</p>
-                          <p className="text-xs text-gray-500">Assigned Vols</p>
+                          <p className="font-bold text-green-600">{camp.registeredVolunteers || 0}</p>
+                          <p className="text-xs text-gray-500">Registered</p>
                         </div>
                         <div className="w-px h-8 bg-gray-200"></div>
                         <div className="text-center">
