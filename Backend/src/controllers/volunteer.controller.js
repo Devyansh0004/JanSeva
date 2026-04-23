@@ -108,7 +108,7 @@ const getMyVolunteerProfile = asyncHandler(async (req, res, next) => {
 // ─── @route  PUT /api/volunteer/profile ──────────────────────────────────────
 // ─── @access Private (volunteer)
 const updateVolunteerProfile = asyncHandler(async (req, res, next) => {
-  const allowed = ['skills', 'availability', 'isAvailable', 'bio', 'location'];
+  const allowed = ['skills', 'availability', 'isAvailable', 'bio', 'location', 'age', 'gender', 'domains'];
   const updates = {};
   allowed.forEach((field) => {
     if (req.body[field] !== undefined) updates[field] = req.body[field];

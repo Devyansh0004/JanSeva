@@ -19,6 +19,14 @@ const PRIORITIES = ['Low', 'Medium', 'High'];
 const STATUSES = ['Pending', 'In Progress', 'Resolved'];
 const SKILLS = ['First Aid', 'Cooking', 'Driving', 'Teaching', 'Medical', 'Counselling', 'Construction', 'IT Support', 'Logistics', 'Translation'];
 const AVAILABILITIES = ['Full-time', 'Part-time', 'Weekends', 'On-call'];
+const DOMAINS = [
+  'Education & Mentorship',
+  'Healthcare & Wellness',
+  'Food Security & Distribution',
+  'Emergency & Disaster Response',
+  'Shelter & Caregiving'
+];
+const GENDERS = ['Male', 'Female', 'Other'];
 
 const NGO_DATA = [
   { name: 'Seva Foundation', state: 'Maharashtra', city: 'Mumbai', lat: 19.076, lng: 72.8777, focus: ['Food', 'Shelter'] },
@@ -155,6 +163,9 @@ const seed = async () => {
     const cities = INDIAN_CITIES[state] || [state];
     return {
       userId: u._id,
+      gender: randomFrom(GENDERS),
+      age: randomInt(18, 65),
+      domains: [...new Set([randomFrom(DOMAINS), randomFrom(DOMAINS)])],
       skills: [...new Set([randomFrom(SKILLS), randomFrom(SKILLS), randomFrom(SKILLS)])],
       availability: randomFrom(AVAILABILITIES),
       isAvailable: Math.random() > 0.35,

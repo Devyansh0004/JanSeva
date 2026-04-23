@@ -8,6 +8,27 @@ const volunteerSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    gender: {
+      type: String,
+      enum: ['Male', 'Female', 'Other', 'Prefer not to say'],
+    },
+    age: {
+      type: Number,
+      min: 16,
+    },
+    domains: {
+      type: [{
+        type: String,
+        enum: [
+          'Education & Mentorship',
+          'Healthcare & Wellness',
+          'Food Security & Distribution',
+          'Emergency & Disaster Response',
+          'Shelter & Caregiving'
+        ]
+      }],
+      default: [],
+    },
     skills: {
       type: [String],
       validate: {
