@@ -13,7 +13,6 @@ import Dashboard from './pages/Dashboard'
 import Explore from './pages/Explore'
 import Campaigns from './pages/Campaigns'
 import Contributions from './pages/Contributions'
-import Recommendations from './pages/Recommendations'
 import TopNGOs from './pages/TopNGOs'
 import NGOProfile from './pages/NGOProfile'
 import VolunteerProfile from './pages/VolunteerProfile'
@@ -40,7 +39,6 @@ function App() {
             <Route path="/explore" element={<Explore />} />
             <Route path="/campaigns" element={<Campaigns />} />
             <Route path="/contributions" element={<Contributions />} />
-            <Route path="/recommendations" element={<Recommendations />} />
             <Route path="/top-ngos" element={<TopNGOs />} />
             <Route path="/ngo-profile" element={<NGOProfile />} />
             <Route path="/volunteer-profile" element={<VolunteerProfile />} />
