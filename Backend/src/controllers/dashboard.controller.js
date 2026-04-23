@@ -131,6 +131,22 @@ const respondToAffiliation = asyncHandler(async (req, res) => {
   sendSuccess(res, 200, `Request ${status.toLowerCase()} successfully`);
 });
 
+const removeAffiliation = asyncHandler(async (req, res) => {
+  if (req.user.role !== 'ngo') throw new AppError('Unauthorized', 403);
+  const { id } = req.params;
+
+  const affiliation = await VolunteerAffiliation.findById(id);
+  if (!affiliation) throw new AppError('Request not found', 404);
+
+  const ngo = await NGO.findOne({ userId: req.user._id });
+  if (!ngo || ngo._id.toString() !== affiliation.ngoId.toString()) {
+    throw new AppError('Unauthorized', 403);
+  }
+
+  await VolunteerAffiliation.findByIdAndDelete(id);
+  sendSuccess(res, 200, 'Volunteer successfully removed from your NGO');
+});
+
 const verifyNgo = asyncHandler(async (req, res) => {
   if (req.user.role !== 'admin') throw new AppError('Unauthorized', 403);
   const { id } = req.params;
@@ -203,14 +219,38 @@ const deleteNgoAccount = asyncHandler(async (req, res) => {
   sendSuccess(res, 200, 'NGO Account and associated data successfully deleted');
 });
 
+const deleteVolunteerAccount = asyncHandler(async (req, res) => {
+  if (req.user.role !== 'volunteer') throw new AppError('Unauthorized', 403);
+
+  const volunteer = await Volunteer.findOne({ userId: req.user._id });
+  if (!volunteer) throw new AppError('Volunteer profile not found', 404);
+
+  // Remove volunteer from all campaigns
+  await Campaign.updateMany(
+    { volunteers: req.user._id },
+    { $pull: { volunteers: req.user._id } }
+  );
+
+  // Delete all affiliations
+  await VolunteerAffiliation.deleteMany({ volunteerId: req.user._id });
+
+  // Delete volunteer profile and user account
+  await Volunteer.findByIdAndDelete(volunteer._id);
+  await User.findByIdAndDelete(req.user._id);
+
+  sendSuccess(res, 200, 'Volunteer Account and associated data successfully deleted');
+});
+
 module.exports = {
   getVolunteerDashboard,
   getNgoDashboard,
   getAdminDashboard,
   requestNgoAffiliation,
   respondToAffiliation,
+  removeAffiliation,
   verifyNgo,
   toggleCampaignRegistration,
   updateProfile,
-  deleteNgoAccount
+  deleteNgoAccount,
+  deleteVolunteerAccount
 };

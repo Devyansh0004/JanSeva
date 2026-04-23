@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Building2, MapPin, Phone, Mail, Trash2, AlertTriangle, Save, ArrowLeft, BadgeCheck, Clock } from 'lucide-react'
+import { Building2, MapPin, Phone, Mail, Trash2, AlertTriangle, Save, ArrowLeft, BadgeCheck, Clock, Edit2, X } from 'lucide-react'
 
 const API = 'http://localhost:5000/api'
 
@@ -8,6 +8,9 @@ export default function NGOProfile() {
   const navigate = useNavigate()
   const [user] = useState(JSON.parse(localStorage.getItem('janseva_user') || '{}'))
   const [profile, setProfile] = useState(null)
+  
+  const [isEditing, setIsEditing] = useState(false)
+  const [detectingLocation, setDetectingLocation] = useState(false)
   
   const [formData, setFormData] = useState({
     name: '',
@@ -107,6 +110,36 @@ export default function NGOProfile() {
     }
   }
 
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.")
+      return
+    }
+    
+    setDetectingLocation(true)
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      try {
+        const { latitude, longitude } = position.coords
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+        const data = await res.json()
+        if (data && data.address) {
+          const city = data.address.city || data.address.town || data.address.village || data.address.county || ''
+          const state = data.address.state || ''
+          setFormData(prev => ({ ...prev, city, state }))
+        } else {
+          alert("Could not determine city and state from coordinates.")
+        }
+      } catch (err) {
+        alert("Failed to fetch location details.")
+      } finally {
+        setDetectingLocation(false)
+      }
+    }, (error) => {
+      alert("Unable to retrieve your location. " + error.message)
+      setDetectingLocation(false)
+    })
+  }
+
   const handleDelete = async () => {
     try {
       const res = await fetch(`${API}/ngos/profile`, { method: 'DELETE', headers })
@@ -133,6 +166,7 @@ export default function NGOProfile() {
   if (loading) return <div className="p-8 text-center">Loading profile...</div>
 
   const isFirstTimeOnboarding = profile && !profile.isProfileComplete
+  const formEnabled = isFirstTimeOnboarding || isEditing
 
   return (
     <section className="section">
@@ -160,9 +194,16 @@ export default function NGOProfile() {
               <p className="text-gray-600 mt-2">Please fill the details and save and apply for verification from admin.</p>
             )}
           </div>
-          <button onClick={handleBackToDashboard} className="btn-outline flex items-center gap-2">
-            <ArrowLeft size={16} /> Back to Dashboard
-          </button>
+          <div className="flex items-center gap-3">
+            {!isFirstTimeOnboarding && !isEditing && (
+              <button onClick={() => { setIsEditing(true); setMessage(''); }} className="btn-outline flex items-center gap-2">
+                <Edit2 size={16} /> Edit Profile
+              </button>
+            )}
+            <button onClick={handleBackToDashboard} className="btn-outline flex items-center gap-2">
+              <ArrowLeft size={16} /> Back to Dashboard
+            </button>
+          </div>
         </div>
 
         <div className="glass-card p-8 mb-8">
@@ -180,28 +221,42 @@ export default function NGOProfile() {
                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                     <Building2 className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input type="text" required className="input-field input-field-icon" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                  <input type="text" required disabled={!formEnabled} className="input-field input-field-icon disabled:opacity-60 disabled:cursor-not-allowed" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                 </div>
               </div>
 
               <div className="md:col-span-2">
                 <label className="mb-2 block text-sm font-semibold">Organization Details</label>
-                <textarea required className="input-field" rows="4" placeholder="Tell us about your organization's mission and operations..." value={formData.organizationDetails} onChange={e => setFormData({...formData, organizationDetails: e.target.value})} />
+                <textarea required disabled={!formEnabled} className="input-field disabled:opacity-60 disabled:cursor-not-allowed" rows="4" placeholder="Tell us about your organization's mission and operations..." value={formData.organizationDetails} onChange={e => setFormData({...formData, organizationDetails: e.target.value})} />
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-semibold">City</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                    <MapPin className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input type="text" required className="input-field input-field-icon" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+              <div className="md:col-span-2 pt-2 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <label className="block text-sm font-semibold text-gray-700">Location</label>
+                  {formEnabled && (
+                    <button 
+                      type="button" 
+                      onClick={detectLocation} 
+                      disabled={detectingLocation}
+                      className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg transition disabled:opacity-50"
+                    >
+                      {detectingLocation ? 'Detecting...' : 'Auto Detect from Map'}
+                    </button>
+                  )}
                 </div>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-semibold">State</label>
-                <input type="text" required className="input-field" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} />
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                        <MapPin className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input type="text" placeholder="City" required disabled={!formEnabled} className="input-field input-field-icon disabled:opacity-60 disabled:cursor-not-allowed" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+                    </div>
+                  </div>
+                  <div>
+                    <input type="text" placeholder="State" required disabled={!formEnabled} className="input-field disabled:opacity-60 disabled:cursor-not-allowed" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} />
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -210,7 +265,7 @@ export default function NGOProfile() {
                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                     <Phone className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input type="tel" required pattern="^[0-9]{10}$" title="Phone number must be exactly 10 digits" className="input-field input-field-icon" value={formData['contactInfo.phone']} onChange={e => setFormData({...formData, 'contactInfo.phone': e.target.value})} />
+                  <input type="tel" required disabled={!formEnabled} pattern="^[0-9]{10}$" title="Phone number must be exactly 10 digits" className="input-field input-field-icon disabled:opacity-60 disabled:cursor-not-allowed" value={formData['contactInfo.phone']} onChange={e => setFormData({...formData, 'contactInfo.phone': e.target.value})} />
                 </div>
               </div>
 
@@ -234,7 +289,8 @@ export default function NGOProfile() {
                         value={area}
                         checked={formData.focusAreas.includes(area)}
                         onChange={handleFocusAreaChange}
-                        className="w-4 h-4 text-green-600 rounded"
+                        disabled={!formEnabled}
+                        className="w-4 h-4 text-green-600 rounded disabled:opacity-60 disabled:cursor-not-allowed"
                       />
                       <span className="text-sm font-medium">{area}</span>
                     </label>
@@ -243,11 +299,35 @@ export default function NGOProfile() {
               </div>
             </div>
 
-            <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
-              <button type="submit" disabled={saving} className="btn-primary">
-                {saving ? 'Saving...' : <><Save size={18} /> {isFirstTimeOnboarding ? 'Save & Apply for Verification' : 'Save Profile'}</>}
-              </button>
-            </div>
+            {formEnabled && (
+              <div className="pt-6 border-t border-gray-100 flex items-center gap-4">
+                <button type="submit" disabled={saving} className="btn-primary flex items-center gap-2">
+                  {saving ? 'Saving...' : <><Save size={18} /> {isFirstTimeOnboarding ? 'Save & Apply for Verification' : 'Save Profile'}</>}
+                </button>
+                {!isFirstTimeOnboarding && (
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setIsEditing(false);
+                      if (profile) {
+                        setFormData({
+                          name: profile.name || '',
+                          organizationDetails: profile.organizationDetails === 'Pending details' ? '' : profile.organizationDetails,
+                          city: profile.city || '',
+                          state: profile.state || '',
+                          'contactInfo.phone': profile.contactInfo?.phone || '',
+                          'contactInfo.email': user.email,
+                          focusAreas: profile.focusAreas || []
+                        });
+                      }
+                    }} 
+                    className="btn-outline flex items-center gap-2"
+                  >
+                    <X size={18} /> Cancel
+                  </button>
+                )}
+              </div>
+            )}
           </form>
         </div>
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, Mail, Save, Clock, CheckCircle, MapPin, Briefcase, Calendar, Users, Edit2, X } from 'lucide-react'
+import { User, Mail, Save, Clock, CheckCircle, MapPin, Briefcase, Calendar, Users, Edit2, X, Trash2, AlertTriangle } from 'lucide-react'
 
 const API = 'http://localhost:5000/api'
 
@@ -40,6 +40,7 @@ export default function VolunteerProfile() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const [detectingLocation, setDetectingLocation] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const token = localStorage.getItem('janseva_token')
   const headers = { Authorization: `Bearer ${token}` }
@@ -106,6 +107,23 @@ export default function VolunteerProfile() {
       alert("Unable to retrieve your location. " + error.message)
       setDetectingLocation(false)
     })
+  }
+
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`${API}/dashboard/profile/volunteer`, { method: 'DELETE', headers })
+      if (res.ok) {
+        localStorage.removeItem('janseva_token')
+        localStorage.removeItem('janseva_user')
+        navigate('/')
+        window.location.reload()
+      } else {
+        const data = await res.json()
+        setMessage(data.message || 'Failed to delete account.')
+      }
+    } catch (err) {
+      setMessage('Failed to delete account.')
+    }
   }
 
   const toggleDomain = (domain) => {
@@ -436,6 +454,29 @@ export default function VolunteerProfile() {
               </div>
             )}
           </form>
+        </div>
+
+        <div className="bg-white rounded-[1.5rem] p-8 border shadow-sm mt-8" style={{ borderColor: 'rgba(239, 68, 68, 0.2)' }}>
+          <h3 className="text-xl font-bold text-red-600 flex items-center gap-2 mb-2">
+            <AlertTriangle /> Danger Zone
+          </h3>
+          <p className="text-sm text-gray-600 mb-6">
+            Deleting your account is permanent. This will remove your volunteer profile, delete all affiliations with NGOs, and unregister you from all campaigns.
+          </p>
+          
+          {showDeleteConfirm ? (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+              <p className="font-bold text-red-800 mb-4">Are you absolutely sure?</p>
+              <div className="flex gap-3">
+                <button onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition">Yes, delete my account</button>
+                <button onClick={() => setShowDeleteConfirm(false)} className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-2 px-6 rounded-lg transition">Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setShowDeleteConfirm(true)} className="flex items-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 font-bold py-2 px-6 rounded-lg transition">
+              <Trash2 size={18} /> Delete Account
+            </button>
+          )}
         </div>
       </div>
     </section>
