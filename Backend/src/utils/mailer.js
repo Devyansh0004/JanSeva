@@ -12,6 +12,7 @@ const createTransporter = () => {
   const pass = process.env.SMTP_PASS;
 
   if (!user || !pass || pass === PLACEHOLDER_SMTP_PASS) {
+    logger.error(`SMTP not configured. user=${user ? 'set' : 'missing'}, pass=${!pass ? 'missing' : pass === PLACEHOLDER_SMTP_PASS ? 'placeholder' : 'set ('+pass.length+' chars)'}`);
     return null;
   }
 
@@ -108,7 +109,7 @@ This code is valid for 5 minutes. If you did not request this, please ignore thi
     return true;
   } catch (error) {
     logger.error(`Failed to send OTP email to ${toEmail}: ${error.message}`);
-    return false;
+    throw new Error(`Email sending failed: ${error.message}`);
   }
 };
 
