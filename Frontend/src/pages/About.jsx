@@ -164,24 +164,24 @@ export default function About() {
           <div className="mb-10 grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div className="glass-card overflow-hidden" style={{ padding: 0, borderRadius: '18px' }}>
               <img
-                src="/social_work_food.png"
+                src="/assets/food_distribution3.jpeg"
                 alt="Community food distribution volunteers"
-                style={{ width: '100%', height: '260px', objectFit: 'cover', display: 'block' }}
+                style={{ width: '100%', height: '400px', objectFit: 'cover', display: 'block' }}
               />
             </div>
             <div className="grid gap-4" style={{ gridTemplateRows: '1fr 1fr' }}>
               <div className="glass-card overflow-hidden" style={{ padding: 0, borderRadius: '18px' }}>
                 <img
-                  src="/social_work_medical.png"
+                  src="/assets/medical_camp.jpg"
                   alt="Medical camp in rural area"
-                  style={{ width: '100%', height: '120px', objectFit: 'cover', display: 'block' }}
+                  style={{ width: '100%', height: '192px', objectFit: 'cover', display: 'block' }}
                 />
               </div>
               <div className="glass-card overflow-hidden" style={{ padding: 0, borderRadius: '18px' }}>
                 <img
-                  src="/social_work_education.png"
+                  src="/assets/education_support3.jpeg"
                   alt="Education volunteers teaching children"
-                  style={{ width: '100%', height: '120px', objectFit: 'cover', display: 'block' }}
+                  style={{ width: '100%', height: '192px', objectFit: 'cover', display: 'block' }}
                 />
               </div>
             </div>
