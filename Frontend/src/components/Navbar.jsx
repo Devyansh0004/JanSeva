@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X, Activity, ChevronDown, BarChart3, Map, Trophy, Megaphone, Heart, Sparkles, LogOut, User } from 'lucide-react'
+import { Menu, X, HeartHandshake, ChevronDown, BarChart3, Map, Trophy, Megaphone, Heart, Sparkles, LogOut, User } from 'lucide-react'
 
 const NAV_LINKS = [
   { to: '/', label: 'Home' },
@@ -84,7 +84,7 @@ export default function Navbar() {
               className="grid h-11 w-11 place-items-center rounded-2xl"
               style={{ background: 'linear-gradient(135deg, var(--green-6), var(--green-7))', boxShadow: '0 12px 24px rgba(64, 145, 108, 0.18)' }}
             >
-              <Activity size={22} style={{ color: '#d8f3dc' }} />
+              <HeartHandshake size={22} style={{ color: '#d8f3dc' }} />
             </div>
             <div>
               <span className="block text-[1.35rem] font-extrabold tracking-[-0.05em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>
