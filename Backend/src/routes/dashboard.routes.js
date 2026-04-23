@@ -6,10 +6,12 @@ const {
   getAdminDashboard,
   requestNgoAffiliation,
   respondToAffiliation,
+  removeAffiliation,
   verifyNgo,
   toggleCampaignRegistration,
   updateProfile,
-  deleteNgoAccount
+  deleteNgoAccount,
+  deleteVolunteerAccount
 } = require('../controllers/dashboard.controller');
 
 router.use(protect);
@@ -21,9 +23,11 @@ router.get('/admin', getAdminDashboard);
 // Actions
 router.post('/request-ngo', requestNgoAffiliation);
 router.put('/respond-affiliation', respondToAffiliation);
+router.delete('/remove-affiliation/:id', removeAffiliation);
 router.put('/verify-ngo/:id', verifyNgo);
 router.post('/campaign-toggle/:id', toggleCampaignRegistration);
 router.put('/profile', updateProfile);
 router.delete('/profile/ngo', deleteNgoAccount);
+router.delete('/profile/volunteer', deleteVolunteerAccount);
 
 module.exports = router;

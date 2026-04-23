@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { Search, UserMinus } from 'lucide-react'
 
 export default function NgoDashboard({ token, user }) {
   const [data, setData] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
   
   useEffect(() => {
     fetch('http://localhost:5000/api/dashboard/ngo', {
@@ -16,6 +18,17 @@ export default function NgoDashboard({ token, user }) {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ requestId, status })
+    })
+    if (res.ok) {
+      window.location.reload()
+    }
+  }
+
+  const removeVolunteer = async (affiliationId) => {
+    if (!window.confirm("Are you sure you want to remove this volunteer from your NGO?")) return;
+    const res = await fetch(`http://localhost:5000/api/dashboard/remove-affiliation/${affiliationId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
     })
     if (res.ok) {
       window.location.reload()
@@ -47,6 +60,11 @@ export default function NgoDashboard({ token, user }) {
     return 'Good evening'
   }
 
+  const filteredVolunteers = approvedVolunteers.filter(vol => 
+    vol.volunteerId.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    vol.volunteerId.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="container py-8">
       <h1 className="page-title mb-8">{getGreeting()}, {ngo.name}</h1>
@@ -74,17 +92,47 @@ export default function NgoDashboard({ token, user }) {
       </div>
 
       <div className="glass-card p-6">
-        <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--green-8)' }}>Your Affiliated Volunteers</h2>
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+          <h2 className="text-xl font-bold" style={{ color: 'var(--green-8)' }}>Your Affiliated Volunteers</h2>
+          {approvedVolunteers.length > 0 && (
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <Search className="w-4 h-4 text-gray-400" />
+              </div>
+              <input 
+                type="text" 
+                placeholder="Search volunteers..." 
+                className="pl-9 pr-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full md:w-64"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          )}
+        </div>
+        
         {approvedVolunteers.length === 0 ? (
           <p className="text-sm text-gray-500">No active volunteers.</p>
+        ) : filteredVolunteers.length === 0 ? (
+          <p className="text-sm text-gray-500">No volunteers found matching your search.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {approvedVolunteers.map(vol => (
-              <div key={vol._id} className="p-4 rounded-xl" style={{ background: 'rgba(216,243,220,0.3)' }}>
-                <p className="font-bold">{vol.volunteerId.name}</p>
-                <p className="text-sm text-gray-600">{vol.volunteerId.email}</p>
-              </div>
-            ))}
+          <div className="max-h-96 overflow-y-auto pr-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredVolunteers.map(vol => (
+                <div key={vol._id} className="p-4 rounded-xl flex items-center justify-between" style={{ background: 'rgba(216,243,220,0.3)' }}>
+                  <div>
+                    <p className="font-bold">{vol.volunteerId.name}</p>
+                    <p className="text-sm text-gray-600">{vol.volunteerId.email}</p>
+                  </div>
+                  <button 
+                    onClick={() => removeVolunteer(vol._id)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
+                    title="Remove Volunteer"
+                  >
+                    <UserMinus size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
