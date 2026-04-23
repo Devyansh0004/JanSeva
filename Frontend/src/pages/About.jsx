@@ -1,14 +1,10 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Target, Eye, Shield, Zap, BarChart2, Users } from 'lucide-react'
 import AnimatedCounter from '../components/AnimatedCounter'
 import TeamCard from '../components/TeamCard'
 
-const impactMetrics = [
-  { value: 200, suffix: '+', label: 'Partner Organizations' },
-  { value: 98, suffix: '%', label: 'Resource Optimization' },
-  { value: 50, suffix: '+', label: 'Districts Covered' },
-  { value: 15000, suffix: '+', label: 'Active Volunteers' },
-]
+// impactMetrics and teamMembers are now managed inside the component based on fetched data
 
 const teamMembers = [
   { name: 'Sravan Kumar', role: 'Team Leader', initials: 'SK', gradient: 'bg-green-600' },
@@ -27,6 +23,29 @@ const values = [
 ]
 
 export default function About() {
+  const [stats, setStats] = useState(null)
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/stats/overview')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.data) setStats(data.data)
+      })
+      .catch((err) => console.error('Failed to fetch stats:', err))
+  }, [])
+
+  const impactMetrics = stats ? [
+    { value: stats.ngos.verified, suffix: '+', label: 'Partner Organizations' },
+    { value: stats.requests.resolutionRate, suffix: '%', label: 'Resource Optimization' },
+    { value: 50, suffix: '+', label: 'Districts Covered' },
+    { value: stats.volunteers.total, suffix: '+', label: 'Active Volunteers' },
+  ] : [
+    { value: 0, suffix: '+', label: 'Partner Organizations' },
+    { value: 0, suffix: '%', label: 'Resource Optimization' },
+    { value: 0, suffix: '+', label: 'Districts Covered' },
+    { value: 0, suffix: '+', label: 'Active Volunteers' },
+  ]
+
   return (
     <div>
       <section className="page-hero">
@@ -54,7 +73,7 @@ export default function About() {
                 <div className="soft-card p-5">
                   <p className="text-xs font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--text-soft)' }}>Coverage growth</p>
                   <p className="mt-3 text-4xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>
-                    67%
+                    {stats ? `${stats.requests.resolutionRate}%` : '0%'}
                   </p>
                   <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>More structured coverage across districts through better NGO coordination.</p>
                 </div>
@@ -72,9 +91,9 @@ export default function About() {
               <div className="mt-4 glass-card p-5">
                 <div className="grid gap-4 md:grid-cols-3">
                   {[
-                    { label: 'Regions served', value: '50+' },
-                    { label: 'Verified partners', value: '200+' },
-                    { label: 'Volunteer network', value: '15k+' },
+                    { label: 'Requests handled', value: stats ? `${stats.requests.total}+` : '0+' },
+                    { label: 'Verified partners', value: stats ? `${stats.ngos.verified}+` : '0+' },
+                    { label: 'Volunteer network', value: stats ? `${stats.volunteers.total}+` : '0+' },
                   ].map((item) => (
                     <div key={item.label}>
                       <p className="text-xs font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--text-soft)' }}>{item.label}</p>
@@ -161,30 +180,16 @@ export default function About() {
       <section className="section section-tint">
         <div className="container">
           {/* Social impact photo strip */}
-          <div className="mb-10 grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
-            <div className="glass-card overflow-hidden" style={{ padding: 0, borderRadius: '18px' }}>
-              <img
-                src="/assets/food_distribution3.jpeg"
-                alt="Community food distribution volunteers"
-                style={{ width: '100%', height: '400px', objectFit: 'cover', display: 'block' }}
-              />
-            </div>
-            <div className="grid gap-4" style={{ gridTemplateRows: '1fr 1fr' }}>
-              <div className="glass-card overflow-hidden" style={{ padding: 0, borderRadius: '18px' }}>
+          <div className="mb-10 grid gap-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+            {['/assets/food_distribution.jpeg', '/assets/medical_assistance.jpeg', '/assets/education_support.jpg', '/assets/shelter_assistance.jpeg'].map((src, index) => (
+              <div key={index} className="glass-card overflow-hidden" style={{ padding: 0, borderRadius: '18px' }}>
                 <img
-                  src="/assets/medical_camp.jpg"
-                  alt="Medical camp in rural area"
-                  style={{ width: '100%', height: '192px', objectFit: 'cover', display: 'block' }}
+                  src={src}
+                  alt={`Impact effort ${index + 1}`}
+                  style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }}
                 />
               </div>
-              <div className="glass-card overflow-hidden" style={{ padding: 0, borderRadius: '18px' }}>
-                <img
-                  src="/assets/education_support3.jpeg"
-                  alt="Education volunteers teaching children"
-                  style={{ width: '100%', height: '192px', objectFit: 'cover', display: 'block' }}
-                />
-              </div>
-            </div>
+            ))}
           </div>
 
           <div className="section-head">
