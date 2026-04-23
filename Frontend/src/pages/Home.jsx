@@ -15,12 +15,7 @@ const topServices = [
   { image: '/assets/voluteer_reg.jpeg', title: 'Volunteer Registration', desc: 'Bring new volunteers in fast, capture their skills, and deploy them to the right missions.' },
 ]
 
-const impactStats = [
-  { value: 10000, suffix: '+', label: 'Volunteers Coordinated' },
-  { value: 500, suffix: '+', label: 'NGOs Connected' },
-  { value: 25000, suffix: '+', label: 'Requests Managed' },
-  { value: 100, suffix: '+', label: 'Communities Served' },
-]
+// impactStats is now dynamically generated inside the component
 
 const testimonials = [
   { quote: 'JanSeva transformed how we coordinate our volunteers. Response time dropped dramatically and our teams finally share one clear picture.', name: 'Priya Sharma', role: 'Program Director', org: 'Sewa Foundation', initials: 'PS', color: 'bg-green-600' },
@@ -37,6 +32,7 @@ const workflow = [
 
 export default function Home() {
   const [ngoLocations, setNgoLocations] = useState([])
+  const [stats, setStats] = useState(null)
 
   useEffect(() => {
     fetch('http://localhost:5000/api/stats/ngo-locations')
@@ -45,7 +41,26 @@ export default function Home() {
         if (data.data) setNgoLocations(data.data)
       })
       .catch(() => {})
+
+    fetch('http://localhost:5000/api/stats/overview')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.data) setStats(data.data)
+      })
+      .catch((err) => console.error('Failed to fetch stats:', err))
   }, [])
+
+  const impactStats = stats ? [
+    { value: stats.volunteers.total, suffix: '+', label: 'Volunteers Coordinated' },
+    { value: stats.ngos.verified, suffix: '+', label: 'NGOs Connected' },
+    { value: stats.requests.total, suffix: '+', label: 'Requests Managed' },
+    { value: 50, suffix: '+', label: 'Communities Served' },
+  ] : [
+    { value: 0, suffix: '+', label: 'Volunteers Coordinated' },
+    { value: 0, suffix: '+', label: 'NGOs Connected' },
+    { value: 0, suffix: '+', label: 'Requests Managed' },
+    { value: 0, suffix: '+', label: 'Communities Served' },
+  ]
 
   return (
     <div>
@@ -92,7 +107,7 @@ export default function Home() {
                     ))}
                   </div>
                   <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                    Trusted by <strong style={{ color: 'var(--green-8)' }}>500+ NGOs</strong> coordinating community response across India.
+                    Trusted by <strong style={{ color: 'var(--green-8)' }}>{stats ? stats.ngos.verified : 0}+ NGOs</strong> coordinating community response across India.
                   </p>
                 </div>
               </div>
@@ -117,7 +132,9 @@ export default function Home() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="soft-card p-5">
                     <p className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--text-soft)' }}>Requests synced</p>
-                    <p className="mt-3 text-4xl font-extrabold tracking-[-0.05em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>24k+</p>
+                    <p className="mt-3 text-4xl font-extrabold tracking-[-0.05em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>
+                      {stats ? `${stats.requests.total}+` : '0+'}
+                    </p>
                     <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>Structured intake keeps teams aligned from report to resolution.</p>
                   </div>
                   <div className="glass-card p-5">
@@ -135,7 +152,7 @@ export default function Home() {
 
                 <div className="mt-4 grid gap-4 md:grid-cols-3">
                   {[
-                    { label: 'Resolution rate', value: '92%' },
+                    { label: 'Resolution rate', value: stats ? `${stats.requests.resolutionRate}%` : '0%' },
                     { label: 'Average response', value: '< 1hr' },
                     { label: 'District coverage', value: '50+' },
                   ].map((item) => (
