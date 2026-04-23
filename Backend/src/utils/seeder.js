@@ -125,7 +125,7 @@ const seed = async () => {
       contributionLevel: contribLevel,
       totalContributions: contributions,
       contactInfo: {
-        phone: `+91 ${randomInt(70000, 99999)}${randomInt(10000, 99999)}`,
+        phone: `${randomInt(70000, 99999)}${randomInt(10000, 99999)}`,
         website: `https://${emailSlug}.org`,
         address: `${randomInt(1, 500)}, Main Road, ${ngo.city}, ${ngo.state}`,
       },

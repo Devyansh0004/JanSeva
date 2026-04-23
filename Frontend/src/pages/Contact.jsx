@@ -151,11 +151,11 @@ export default function Contact() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label htmlFor="email" className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>Email</label>
-                    <input id="email" name="email" type="email" value={form.email} onChange={handleChange} className="input-field" placeholder="arjun@ngo.org" required />
+                    <input id="email" name="email" type="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address" value={form.email} onChange={handleChange} className="input-field" placeholder="arjun@ngo.org" required />
                   </div>
                   <div>
                     <label htmlFor="phone" className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>Phone Number</label>
-                    <input id="phone" name="phone" type="tel" value={form.phone} onChange={handleChange} className="input-field" placeholder="+91 98765 43210" />
+                    <input id="phone" name="phone" type="tel" pattern="^[0-9]{10}$" title="Phone number must be exactly 10 digits" value={form.phone} onChange={handleChange} className="input-field" placeholder="9876543210" />
                   </div>
                 </div>
 

@@ -1,6 +1,10 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Mail, Lock, User, ArrowRight, Shield, Eye, EyeOff } from 'lucide-react'
+import { Mail, Lock, User, ArrowRight, Shield, Eye, EyeOff, KeyRound, RotateCcw, CheckCircle2 } from 'lucide-react'
+
+const OTP_LENGTH = 6
+const OTP_EXPIRY_SECONDS = 300 // 5 minutes
+const RESEND_COOLDOWN = 30 // 30 seconds before allowing resend
 
 const Signup = () => {
   const navigate = useNavigate()
@@ -9,6 +13,15 @@ const Signup = () => {
   const [loading, setLoading] = useState(false)
   const [showPwd, setShowPwd] = useState(false)
 
+  // OTP state
+  const [step, setStep] = useState(1) // 1 = form, 2 = otp verification
+  const [otpDigits, setOtpDigits] = useState(Array(OTP_LENGTH).fill(''))
+  const [timer, setTimer] = useState(OTP_EXPIRY_SECONDS)
+  const [resendCooldown, setResendCooldown] = useState(0)
+  const [otpSending, setOtpSending] = useState(false)
+  const inputRefs = useRef([])
+
+  // Password strength
   const getStrength = (pass) => {
     let s = 0;
     if (pass.length > 7) s += 1;
@@ -22,21 +35,140 @@ const Signup = () => {
   const strengthLabels = ['Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Excellent']
   const strengthColors = ['bg-red-500', 'bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-green-600']
 
-  const handleSubmit = async (e) => {
+  // OTP expiry timer
+  useEffect(() => {
+    if (step !== 2 || timer <= 0) return
+    const interval = setInterval(() => setTimer((t) => t - 1), 1000)
+    return () => clearInterval(interval)
+  }, [step, timer])
+
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const interval = setInterval(() => setResendCooldown((t) => t - 1), 1000)
+    return () => clearInterval(interval)
+  }, [resendCooldown])
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }
+
+  // Step 1: Send OTP
+  const handleSendOtp = async (e) => {
     e.preventDefault()
+    setOtpSending(true)
+    setError(null)
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, name: formData.name, role: formData.role }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.message || 'Failed to send OTP')
+
+      // Move to step 2
+      setStep(2)
+      setTimer(OTP_EXPIRY_SECONDS)
+      setResendCooldown(RESEND_COOLDOWN)
+      setOtpDigits(Array(OTP_LENGTH).fill(''))
+      // Focus first OTP input after transition
+      setTimeout(() => inputRefs.current[0]?.focus(), 100)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setOtpSending(false)
+    }
+  }
+
+  // Resend OTP
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return
+    setOtpSending(true)
+    setError(null)
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, name: formData.name, role: formData.role }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.message || 'Failed to resend OTP')
+
+      setTimer(OTP_EXPIRY_SECONDS)
+      setResendCooldown(RESEND_COOLDOWN)
+      setOtpDigits(Array(OTP_LENGTH).fill(''))
+      setError(null)
+      inputRefs.current[0]?.focus()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setOtpSending(false)
+    }
+  }
+
+  // Handle OTP digit input
+  const handleOtpChange = (index, value) => {
+    if (!/^\d*$/.test(value)) return // only digits
+    const newDigits = [...otpDigits]
+    newDigits[index] = value.slice(-1) // take last digit
+    setOtpDigits(newDigits)
+
+    // Auto-focus next
+    if (value && index < OTP_LENGTH - 1) {
+      inputRefs.current[index + 1]?.focus()
+    }
+  }
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus()
+    }
+  }
+
+  const handleOtpPaste = (e) => {
+    e.preventDefault()
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH)
+    if (!pasted) return
+    const newDigits = [...otpDigits]
+    for (let i = 0; i < pasted.length; i++) {
+      newDigits[i] = pasted[i]
+    }
+    setOtpDigits(newDigits)
+    const focusIndex = Math.min(pasted.length, OTP_LENGTH - 1)
+    inputRefs.current[focusIndex]?.focus()
+  }
+
+  // Step 2: Verify OTP and create account
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault()
+    const otp = otpDigits.join('')
+    if (otp.length !== OTP_LENGTH) {
+      setError('Please enter the complete 6-digit code.')
+      return
+    }
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch('http://localhost:5000/api/auth/signup', {
+      const response = await fetch('http://localhost:5000/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          email: formData.email,
+          otp,
+          name: formData.name,
+          password: formData.password,
+          role: formData.role,
+        }),
       })
       const data = await response.json()
-      if (!response.ok) throw new Error(data.message || 'Something went wrong')
+      if (!response.ok) throw new Error(data.message || 'Verification failed')
+
       localStorage.setItem('janseva_token', data.data.token)
       localStorage.setItem('janseva_user', JSON.stringify(data.data.user))
-      
+
       if (data.data.user.role === 'ngo') {
         window.location.href = '/ngo-profile'
       } else {
@@ -49,6 +181,126 @@ const Signup = () => {
     }
   }
 
+  // ─── Render Step 2: OTP Input ──────────────────────────────────────────────
+  if (step === 2) {
+    return (
+      <section className="section">
+        <div className="container" style={{ maxWidth: '520px' }}>
+          <div className="glass-card p-8 md:p-10">
+            <div className="mb-8 text-center">
+              <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full" style={{ background: 'linear-gradient(135deg, var(--green-6), var(--green-7))' }}>
+                <KeyRound className="h-8 w-8" style={{ color: '#d8f3dc' }} />
+              </div>
+              <h2 className="text-2xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>
+                Verify your email
+              </h2>
+              <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+                We've sent a 6-digit code to
+              </p>
+              <p className="mt-1 text-sm font-bold" style={{ color: 'var(--green-7)' }}>
+                {formData.email}
+              </p>
+            </div>
+
+            {error && (
+              <div className="mb-6 rounded-2xl px-4 py-3 text-sm font-medium" style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.16)', color: 'var(--red-accent)' }}>
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleVerifyOtp}>
+              {/* OTP Inputs */}
+              <div className="flex justify-center gap-3 mb-6" onPaste={handleOtpPaste}>
+                {otpDigits.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => (inputRefs.current[index] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                    className="text-center text-2xl font-extrabold"
+                    style={{
+                      width: '52px',
+                      height: '60px',
+                      borderRadius: '14px',
+                      border: digit ? '2px solid var(--green-5)' : '2px solid rgba(45, 106, 79, 0.14)',
+                      background: digit ? 'rgba(82, 183, 136, 0.06)' : 'rgba(255,255,255,0.92)',
+                      color: 'var(--green-8)',
+                      fontFamily: 'Space Grotesk, Manrope, sans-serif',
+                      outline: 'none',
+                      transition: 'border-color 200ms ease, background 200ms ease',
+                      caretColor: 'var(--green-6)',
+                    }}
+                    onFocus={(e) => { e.target.style.borderColor = 'var(--green-5)'; e.target.style.boxShadow = '0 0 0 4px rgba(82, 183, 136, 0.14)' }}
+                    onBlur={(e) => { e.target.style.borderColor = digit ? 'var(--green-5)' : 'rgba(45, 106, 79, 0.14)'; e.target.style.boxShadow = 'none' }}
+                  />
+                ))}
+              </div>
+
+              {/* Timer */}
+              <div className="text-center mb-6">
+                {timer > 0 ? (
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                    Code expires in <span className="font-bold" style={{ color: timer < 60 ? 'var(--red-accent)' : 'var(--green-7)' }}>{formatTime(timer)}</span>
+                  </p>
+                ) : (
+                  <p className="text-sm font-semibold" style={{ color: 'var(--red-accent)' }}>
+                    Code has expired. Please resend.
+                  </p>
+                )}
+              </div>
+
+              {/* Verify Button */}
+              <button
+                type="submit"
+                disabled={loading || timer <= 0 || otpDigits.join('').length !== OTP_LENGTH}
+                className="btn-primary w-full"
+                style={{ opacity: (loading || timer <= 0 || otpDigits.join('').length !== OTP_LENGTH) ? 0.6 : 1 }}
+              >
+                {loading ? (
+                  'Verifying...'
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-5 w-5" />
+                    Verify & Create Account
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Resend + Back */}
+            <div className="mt-6 flex items-center justify-between">
+              <button
+                onClick={() => { setStep(1); setError(null) }}
+                className="text-sm font-semibold flex items-center gap-1"
+                style={{ color: 'var(--text-muted)', background: 'none', cursor: 'pointer' }}
+              >
+                ← Back to form
+              </button>
+              <button
+                onClick={handleResendOtp}
+                disabled={resendCooldown > 0 || otpSending}
+                className="text-sm font-semibold flex items-center gap-1"
+                style={{
+                  color: resendCooldown > 0 ? 'var(--text-soft)' : 'var(--green-6)',
+                  background: 'none',
+                  cursor: resendCooldown > 0 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <RotateCcw className="h-4 w-4" />
+                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  // ─── Render Step 1: Signup Form ────────────────────────────────────────────
   return (
     <section className="section">
       <div className="container">
@@ -62,7 +314,7 @@ const Signup = () => {
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {[
                 { label: 'Roles supported', value: '3' },
-                { label: 'Onboarding flow', value: 'Simpler' },
+                { label: 'Email verified', value: 'OTP' },
                 { label: 'Theme', value: 'Light SaaS' },
               ].map((item) => (
                 <div key={item.label} className="glass-card p-4">
@@ -81,7 +333,7 @@ const Signup = () => {
               <h2 className="text-2xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>
                 Create your account
               </h2>
-              <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>Set up your role and start contributing through JanSeva.</p>
+              <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>We'll verify your email with a one-time code.</p>
             </div>
 
             {error && (
@@ -90,7 +342,7 @@ const Signup = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSendOtp} className="space-y-5">
               <div>
                 <label className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>Full Name</label>
                 <div className="relative">
@@ -106,7 +358,7 @@ const Signup = () => {
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                     <Mail className="h-5 w-5" style={{ color: 'var(--text-soft)' }} />
                   </div>
-                  <input type="email" required className="input-field input-field-icon" placeholder="you@email.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                  <input type="email" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address" className="input-field input-field-icon" placeholder="you@email.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
                 </div>
               </div>
               <div>
@@ -138,9 +390,13 @@ const Signup = () => {
                   <option value="ngo">NGO Representative</option>
                 </select>
               </div>
-              <button type="submit" disabled={loading} className="btn-mustard w-full">
-                {loading ? 'Creating account...' : 'Create Account'}
-                {!loading && <ArrowRight className="h-5 w-5" />}
+              <button type="submit" disabled={otpSending} className="btn-mustard w-full">
+                {otpSending ? 'Sending verification code...' : (
+                  <>
+                    Send Verification Code
+                    <Mail className="h-5 w-5" />
+                  </>
+                )}
               </button>
             </form>
 

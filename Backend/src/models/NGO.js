@@ -22,7 +22,7 @@ const ngoSchema = new mongoose.Schema(
     },
     registrationNumber: { type: String, trim: true, sparse: true },
     contactInfo: {
-      phone: { type: String, trim: true },
+      phone: { type: String, trim: true, match: [/^\d{10}$/, 'Phone number must be exactly 10 digits'] },
       website: { type: String, trim: true },
       address: { type: String, trim: true },
     },
