@@ -11,7 +11,6 @@ const NAV_LINKS = [
     children: [
       { to: '/explore', label: 'Find NGOs', icon: Map },
       { to: '/top-ngos', label: 'Top NGOs', icon: Trophy },
-      { to: '/recommendations', label: 'Recommendations', icon: Sparkles },
       { to: '/campaigns', label: 'Campaigns', icon: Megaphone },
       { to: '/contributions', label: 'Contributions', icon: Heart },
       { to: '/statistics', label: 'Analytics', icon: BarChart3 },
