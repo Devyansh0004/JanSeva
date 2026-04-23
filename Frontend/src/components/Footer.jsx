@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube, Activity } from 'lucide-react'
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube, HeartHandshake } from 'lucide-react'
 
 const footerLinks = {
   'Quick Links': [
@@ -39,7 +39,7 @@ export default function Footer() {
                   className="grid h-11 w-11 place-items-center rounded-2xl"
                   style={{ background: 'var(--green-6)' }}
                 >
-                  <Activity size={20} style={{ color: '#d8f3dc' }} />
+                  <HeartHandshake size={20} style={{ color: '#d8f3dc' }} />
                 </div>
                 <div>
                   <p className="text-xl font-extrabold tracking-[-0.05em]" style={{ color: '#ffffff', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>
