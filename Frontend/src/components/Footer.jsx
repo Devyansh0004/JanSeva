@@ -102,11 +102,11 @@ export default function Footer() {
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
                   <Mail size={16} className="mt-1 shrink-0" style={{ color: 'var(--green-5)' }} />
-                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>support@janseva.org</span>
+                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>support.janseva@gmail.com</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Phone size={16} className="mt-1 shrink-0" style={{ color: 'var(--blue-accent)' }} />
-                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>+91 (0612) 302-8001</span>
+                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>+91 7404189988</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <MapPin size={16} className="mt-1 shrink-0" style={{ color: 'var(--red-accent)' }} />

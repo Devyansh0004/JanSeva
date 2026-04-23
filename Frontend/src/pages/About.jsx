@@ -11,12 +11,12 @@ const impactMetrics = [
 ]
 
 const teamMembers = [
-  { name: 'Arjun Verma', role: 'Founder & CEO', initials: 'AV', gradient: 'bg-green-700' },
-  { name: 'Neha Gupta', role: 'Chief Technology Officer', initials: 'NG', gradient: 'bg-green-600' },
-  { name: 'Rahul Mishra', role: 'Head of Operations', initials: 'RM', gradient: 'bg-green-500' },
-  { name: 'Priya Sharma', role: 'Product Designer', initials: 'PS', gradient: 'bg-green-600' },
-  { name: 'Vikram Singh', role: 'Data Scientist', initials: 'VS', gradient: 'bg-green-700' },
-  { name: 'Anjali Patel', role: 'Community Manager', initials: 'AP', gradient: 'bg-green-500' },
+  { name: 'Sravan Kumar', role: 'Team Leader', initials: 'SK', gradient: 'bg-green-600' },
+  { name: 'Kanishka', role: 'Team Member', initials: 'K', gradient: 'bg-green-600' },
+  { name: 'Devyansh', role: 'Team Member', initials: 'D', gradient: 'bg-green-600' },
+  { name: 'Sonu Kumar', role: 'Team Member', initials: 'SK', gradient: 'bg-green-600' },
+  { name: 'Vivekananda', role: 'Team Member', initials: 'V', gradient: 'bg-green-600' },
+  { name: 'Mohith Chandra', role: 'Team Member', initials: 'MC', gradient: 'bg-green-600' },
 ]
 
 const values = [

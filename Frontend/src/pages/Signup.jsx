@@ -36,8 +36,12 @@ const Signup = () => {
       if (!response.ok) throw new Error(data.message || 'Something went wrong')
       localStorage.setItem('janseva_token', data.data.token)
       localStorage.setItem('janseva_user', JSON.stringify(data.data.user))
-      navigate('/dashboard')
-      window.location.reload()
+      
+      if (data.data.user.role === 'ngo') {
+        window.location.href = '/ngo-profile'
+      } else {
+        window.location.href = '/dashboard'
+      }
     } catch (err) {
       setError(err.message)
     } finally {

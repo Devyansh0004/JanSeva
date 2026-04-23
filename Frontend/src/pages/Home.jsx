@@ -136,7 +136,7 @@ export default function Home() {
                 <div className="mt-4 grid gap-4 md:grid-cols-3">
                   {[
                     { label: 'Resolution rate', value: '92%' },
-                    { label: 'Average response', value: '< 15m' },
+                    { label: 'Average response', value: '< 1hr' },
                     { label: 'District coverage', value: '50+' },
                   ].map((item) => (
                     <div key={item.label} className="glass-card p-4">
@@ -246,7 +246,7 @@ export default function Home() {
           <div className="cards-grid-3" style={{ gap: '16px' }}>
             <div className="glass-card overflow-hidden" style={{ padding: 0 }}>
               <img
-                src="/social_work_food.png"
+                src="/food_distribution.jpeg"
                 alt="Volunteers distributing food in a community"
                 style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block' }}
               />
@@ -258,7 +258,7 @@ export default function Home() {
             </div>
             <div className="glass-card overflow-hidden" style={{ padding: 0 }}>
               <img
-                src="/social_work_medical.png"
+                src="/medical_assistance.jpeg"
                 alt="Medical camp for rural communities"
                 style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block' }}
               />
@@ -270,7 +270,7 @@ export default function Home() {
             </div>
             <div className="glass-card overflow-hidden" style={{ padding: 0 }}>
               <img
-                src="/social_work_education.png"
+                src="/education_support.jpg"
                 alt="Education volunteers teaching children"
                 style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block' }}
               />

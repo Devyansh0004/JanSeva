@@ -86,6 +86,9 @@ export default function NGOProfile() {
       if (res.ok) {
         setMessage('Profile updated successfully! You can now access your dashboard.')
         setProfile(data.data) // Updates local profile which has isProfileComplete = true
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 1500)
       } else {
         setMessage(data.message || 'Failed to update profile.')
       }
