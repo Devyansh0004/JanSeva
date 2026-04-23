@@ -10,8 +10,6 @@ router.get('/', optionalAuth, getAllNGOs);
 router.get('/ranked', optionalAuth, getRankedNGOs);
 router.get('/search', optionalAuth, searchNGOs);
 router.get('/nearby', optionalAuth, getNearbyNGOs);
-router.get('/:id', optionalAuth, getNGOById);
-
 // Protected routes
 router.use(protect);
 
@@ -24,5 +22,8 @@ router.delete('/profile', authorize('ngo'), deleteMyNGOProfile);
 router.get('/admin/pending', authorize('admin'), getPendingNGOs);
 router.patch('/admin/:id/approve', authorize('admin'), approveNGO);
 router.patch('/admin/:id/reject', authorize('admin'), rejectNGO);
+
+// This must remain at the bottom to avoid shadowing
+router.get('/:id', optionalAuth, getNGOById);
 
 module.exports = router;

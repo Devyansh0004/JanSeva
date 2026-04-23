@@ -8,6 +8,8 @@ export default function NGODashboard({ user }) {
   const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
   const [pendingRequests, setPendingRequests] = useState([])
+  const [approvedVolunteers, setApprovedVolunteers] = useState([])
+  const [assignHoursInput, setAssignHoursInput] = useState({})
   const [campaigns, setCampaigns] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -28,14 +30,16 @@ export default function NGODashboard({ user }) {
 
   const loadData = async () => {
     try {
-      const [ngoRes, pendingRes, campRes] = await Promise.all([
+      const [ngoRes, pendingRes, approvedRes, campRes] = await Promise.all([
         fetch(`${API}/ngos/profile`, { headers }).then(res => res.json()),
         fetch(`${API}/volunteer-ngo/pending`, { headers }).then(res => res.json()),
+        fetch(`${API}/volunteer-ngo/approved`, { headers }).then(res => res.json()),
         fetch(`${API}/campaigns/ngo/my`, { headers }).then(res => res.json())
       ])
       
       if (ngoRes.success) setProfile(ngoRes.data)
       if (pendingRes.success) setPendingRequests(pendingRes.data)
+      if (approvedRes.success) setApprovedVolunteers(approvedRes.data)
       if (campRes.success) setCampaigns(campRes.data)
     } catch (err) {
       console.error(err)
@@ -53,9 +57,33 @@ export default function NGODashboard({ user }) {
       const res = await fetch(`${API}/volunteer-ngo/${id}/${action}`, { method: 'PATCH', headers })
       if (res.ok) {
         setPendingRequests(prev => prev.filter(req => req._id !== id))
+        loadData() // Refresh to fetch approved list immediately
       }
     } catch (err) {
       console.error(err)
+    }
+  }
+
+  const handleAssignHours = async (volunteerUserId) => {
+    const hours = parseInt(assignHoursInput[volunteerUserId]);
+    if (!hours || hours <= 0) return alert('Please enter valid hours');
+
+    try {
+      const res = await fetch(`${API}/volunteer-ngo/${volunteerUserId}/assign-hours`, {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hours })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message);
+        setAssignHoursInput(prev => ({ ...prev, [volunteerUserId]: '' }));
+        loadData(); // Reload to update displayed hours
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      alert('Failed to assign hours');
     }
   }
 
@@ -110,7 +138,12 @@ export default function NGODashboard({ user }) {
 
   if (loading) return <div className="p-8 text-center">Loading dashboard...</div>
 
-  // 1. Block: NGO is pending admin approval
+  // 1. Block: NGO must complete profile first before doing anything
+  if (profile && !profile.isProfileComplete) {
+    return <Navigate to="/ngo-profile" replace />
+  }
+
+  // 2. Block: NGO is pending admin approval
   if (profile?.approvalStatus === 'pending') {
     return (
       <section className="section text-center">
@@ -128,13 +161,6 @@ export default function NGODashboard({ user }) {
         </div>
       </section>
     )
-  }
-
-  // 2. Block: NGO is approved but profile is incomplete (Onboarding Flow)
-  // Automatically redirect them to the profile page
-  if (profile?.approvalStatus === 'approved' && !profile?.isProfileComplete) {
-    // We use Navigate to redirect immediately without rendering an intermediate screen
-    return <Navigate to="/ngo-profile" replace />
   }
 
   // 3. Normal Dashboard View (Approved & Profile Complete)
@@ -187,6 +213,46 @@ export default function NGODashboard({ user }) {
                       </button>
                       <button onClick={() => handleRequest(req._id, 'reject')} className="btn-danger py-2 min-h-0 text-sm flex items-center gap-1">
                         <XCircle size={16} /> Reject
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <h2 className="text-xl font-bold mt-10 mb-6 flex items-center gap-2">
+              <CheckCircle className="text-green-600" /> Approved Volunteers
+            </h2>
+            
+            <div className="space-y-4">
+              {approvedVolunteers.length === 0 ? (
+                <div className="p-8 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed">
+                  No approved volunteers yet.
+                </div>
+              ) : (
+                approvedVolunteers.map(vol => (
+                  <div key={vol._id} className="flex items-center justify-between p-4 border rounded-xl hover:shadow-sm transition">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center font-bold text-green-700">
+                        {vol.volunteerId.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900">{vol.volunteerId.name}</p>
+                        <p className="text-sm text-gray-500">{vol.volunteerId.email}</p>
+                        <p className="text-xs font-bold text-green-600 mt-1">Total Hours: {vol.volunteeringHours}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <input 
+                        type="number" 
+                        placeholder="Hrs" 
+                        min="1"
+                        className="w-16 p-2 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                        value={assignHoursInput[vol.volunteerId._id] || ''}
+                        onChange={e => setAssignHoursInput({...assignHoursInput, [vol.volunteerId._id]: e.target.value})}
+                      />
+                      <button onClick={() => handleAssignHours(vol.volunteerId._id)} className="btn-primary py-2 min-h-0 text-sm">
+                        Assign
                       </button>
                     </div>
                   </div>
