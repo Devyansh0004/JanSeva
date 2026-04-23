@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Utensils, HeartPulse, BookOpen, Home as HomeIcon, Siren, UserPlus, Users, Building2, ClipboardList, Star, CheckCircle2, Heart } from 'lucide-react'
+import { ArrowRight, Users, Building2, ClipboardList, Star, CheckCircle2, Heart } from 'lucide-react'
 import AnimatedCounter from '../components/AnimatedCounter'
 import TestimonialCard from '../components/TestimonialCard'
 import IndiaMap from '../components/IndiaMap'
 import ServiceCard from '../components/ServiceCard'
 
 const topServices = [
-  { icon: Utensils, title: 'Food Distribution', desc: 'Coordinate food relief efforts quickly and route support to the neighborhoods that need it most.' },
-  { icon: HeartPulse, title: 'Medical Assistance', desc: 'Connect medical camps, volunteer responders, and urgent health needs through one workflow.' },
-  { icon: BookOpen, title: 'Education Support', desc: 'Track teaching requests, scholarships, and local education drives without losing field visibility.' },
-  { icon: HomeIcon, title: 'Shelter Assistance', desc: 'Match shelter capacity with on-ground requests and keep delivery teams aligned in real time.' },
-  { icon: Siren, title: 'Emergency Response', desc: 'Spin up rapid-response coordination during disasters with clear priorities and resource tracking.' },
-  { icon: UserPlus, title: 'Volunteer Registration', desc: 'Bring new volunteers in fast, capture their skills, and deploy them to the right missions.' },
+  { image: '/assets/food_distribution.jpeg', title: 'Food Distribution', desc: 'Coordinate food relief efforts quickly and route support to the neighborhoods that need it most.' },
+  { image: '/assets/medical_assistance.jpeg', title: 'Medical Assistance', desc: 'Connect medical camps, volunteer responders, and urgent health needs through one workflow.' },
+  { image: '/assets/education_support.jpg', title: 'Education Support', desc: 'Track teaching requests, scholarships, and local education drives without losing field visibility.' },
+  { image: '/assets/shelter_assistance.jpeg', title: 'Shelter Assistance', desc: 'Match shelter capacity with on-ground requests and keep delivery teams aligned in real time.' },
+  { image: '/assets/emergency_resonse.avif', title: 'Emergency Response', desc: 'Spin up rapid-response coordination during disasters with clear priorities and resource tracking.' },
+  { image: '/assets/voluteer_reg.jpeg', title: 'Volunteer Registration', desc: 'Bring new volunteers in fast, capture their skills, and deploy them to the right missions.' },
 ]
 
 const impactStats = [
@@ -246,7 +246,7 @@ export default function Home() {
           <div className="cards-grid-3" style={{ gap: '16px' }}>
             <div className="glass-card overflow-hidden" style={{ padding: 0 }}>
               <img
-                src="/food_distribution.jpeg"
+                src="/assets/food_distribution2.jpeg"
                 alt="Volunteers distributing food in a community"
                 style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block' }}
               />
@@ -258,7 +258,7 @@ export default function Home() {
             </div>
             <div className="glass-card overflow-hidden" style={{ padding: 0 }}>
               <img
-                src="/medical_assistance.jpeg"
+                src="/assets/medical_assistance2.jpeg"
                 alt="Medical camp for rural communities"
                 style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block' }}
               />
@@ -270,7 +270,7 @@ export default function Home() {
             </div>
             <div className="glass-card overflow-hidden" style={{ padding: 0 }}>
               <img
-                src="/education_support.jpg"
+                src="/assets/education_support2.jpeg"
                 alt="Education volunteers teaching children"
                 style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block' }}
               />
