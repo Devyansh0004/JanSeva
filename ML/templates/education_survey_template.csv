@@ -1,0 +1,4 @@
+village_id,village_name,household_id,surveyor_id,survey_date,school_age_children_count,enrolled_children_count,dropout_children_count,distance_to_school_km,illiterate_adults_count,total_adults_count,literate_females_count,total_females_count,highest_education_level_encoded,midday_meal_access_yn,internet_access_yn,teachers_in_school,primary_school_nearby_yn
+VLG_001,Rampur,HH_001,SRV_001,2024-01-15,3,2,1,5,4,6,2,4,Primary,1,0,2,1
+VLG_001,Rampur,HH_002,SRV_001,2024-01-15,2,2,0,2,1,4,3,4,Secondary,1,1,3,1
+VLG_001,Rampur,HH_003,SRV_001,2024-01-15,4,1,3,8,5,5,1,5,None,0,0,1,0

@@ -1,0 +1,4 @@
+village_id,village_name,household_id,surveyor_id,survey_date,house_type,room_count,household_size,electricity_access_yn,toilet_access_yn,drinking_water_source,flood_prone_yn,house_damaged_yn,persons_per_room,owns_land_yn,pmay_beneficiary_yn,disaster_affected_yn,kitchen_separate_yn
+VLG_001,Rampur,HH_001,SRV_001,2024-01-15,Kutcha,2,6,0,0,Well,1,1,3,0,0,1,0
+VLG_001,Rampur,HH_002,SRV_001,2024-01-15,Pucca,4,4,1,1,Tap,0,0,1,1,1,0,1
+VLG_001,Rampur,HH_003,SRV_001,2024-01-15,Semi-Pucca,2,8,0,0,River,1,0,4,0,0,1,0

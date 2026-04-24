@@ -18,6 +18,7 @@ import NGOProfile from './pages/NGOProfile'
 import VolunteerProfile from './pages/VolunteerProfile'
 import Profile from './pages/Profile'
 import CampaignDetails from './pages/CampaignDetails'
+import MLHub from './pages/MLHub'
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
             <Route path="/ngo-profile" element={<NGOProfile />} />
             <Route path="/volunteer-profile" element={<VolunteerProfile />} />
             <Route path="/ngo-campaign/:id" element={<CampaignDetails />} />
+            <Route path="/recommendations" element={<MLHub />} />
           </Routes>
         </main>
         <Footer />

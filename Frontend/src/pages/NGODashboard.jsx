@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
-import { Building2, Users, CheckCircle, XCircle, AlertTriangle, Plus, FileSpreadsheet, Map, Search } from 'lucide-react'
+import { Building2, Users, CheckCircle, XCircle, AlertTriangle, Plus, FileSpreadsheet, Map, Download, ChevronDown, Brain, Search } from 'lucide-react'
 
 const API = 'http://localhost:5000/api'
 
@@ -16,6 +16,7 @@ export default function NGODashboard({ user }) {
 
   // Modal state
   const [showModal, setShowModal] = useState(false)
+  const [showTemplatesMenu, setShowTemplatesMenu] = useState(false)
   const [formData, setFormData] = useState({ title: '', description: '', startDate: '', endDate: '', targetAmount: 0, isEmergency: false })
   const [domainTargets, setDomainTargets] = useState({
     medical: { selected: true, villages: 2, volunteers: 10 },
@@ -181,8 +182,8 @@ export default function NGODashboard({ user }) {
   }
 
   const filteredVolunteers = approvedVolunteers.filter(vol => 
-    vol.volunteerId.name.toLowerCase().includes(searchVolunteer.toLowerCase()) ||
-    vol.volunteerId.email.toLowerCase().includes(searchVolunteer.toLowerCase())
+    vol.volunteerId?.name?.toLowerCase().includes(searchVolunteer.toLowerCase()) ||
+    vol.volunteerId?.email?.toLowerCase().includes(searchVolunteer.toLowerCase())
   )
 
   // 3. Normal Dashboard View (Approved & Profile Complete)
@@ -311,9 +312,28 @@ export default function NGODashboard({ user }) {
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <Map className="text-green-600" /> Active Campaigns & Aid Missions
               </h2>
-              <button onClick={() => setShowModal(true)} className="btn-primary flex items-center gap-2 text-sm">
-                <Plus size={16} /> Create New Campaign
-              </button>
+              <div className="flex items-center gap-2">
+                <Link to="/recommendations" className="btn-outline flex items-center gap-2 text-sm">
+                  <Brain size={16} /> ML Hub
+                </Link>
+                <div className="relative">
+                  <button onClick={() => setShowTemplatesMenu(s => !s)} className="btn-outline flex items-center gap-2 text-sm">
+                    <Download size={16} /> Templates <ChevronDown size={14} />
+                  </button>
+                  {showTemplatesMenu && (
+                    <div className="absolute right-0 top-full mt-1 bg-white border shadow-lg rounded-xl z-20 min-w-44 overflow-hidden">
+                      {['food','health','education','shelter','emergency'].map(type => (
+                        <a key={type} href={`http://localhost:5000/api/surveys/templates/${type}`} download className="block px-4 py-2 text-sm capitalize hover:bg-gray-50 font-medium">
+                          📄 {type} survey
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button onClick={() => setShowModal(true)} className="btn-primary flex items-center gap-2 text-sm">
+                  <Plus size={16} /> Create New Campaign
+                </button>
+              </div>
             </div>
 
             <div className="space-y-4">

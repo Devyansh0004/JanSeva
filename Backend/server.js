@@ -22,6 +22,7 @@ const recommendationRoutes = require('./src/routes/recommendation.routes');
 const contactRoutes = require('./src/routes/contact.routes');
 const volunteerNgoRoutes = require('./src/routes/volunteer-ngo.routes');
 const dashboardRoutes = require('./src/routes/dashboard.routes');
+const mlRoutes = require('../ML/routes');
 
 // ─── Bootstrap DB ─────────────────────────────────────────────────────────────
 connectDB();
@@ -59,8 +60,8 @@ app.use('/api', limiter);
 app.use('/api/auth', authLimiter);
 
 // ─── Body Parsing ─────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // ─── HTTP Request Logging ─────────────────────────────────────────────────────
 if (process.env.NODE_ENV !== 'test') {
@@ -96,6 +97,7 @@ app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/volunteer-ngo', volunteerNgoRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api', mlRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use(notFound);

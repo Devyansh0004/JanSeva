@@ -1,0 +1,4 @@
+village_id,village_name,household_id,surveyor_id,survey_date,emergency_type,affected_households,casualties,displaced_persons,relief_received_yn,infrastructure_damage_level,response_time_hours,external_aid_received_yn,lives_at_risk,evacuation_done_yn
+VLG_001,Rampur,HH_001,SRV_001,2024-01-15,Flood,45,3,120,0,Severe,48,0,200,0
+VLG_001,Rampur,HH_002,SRV_001,2024-01-15,Drought,30,0,0,1,Moderate,24,1,50,1
+VLG_001,Rampur,HH_003,SRV_001,2024-01-15,Flood,60,5,200,0,Critical,72,0,350,0

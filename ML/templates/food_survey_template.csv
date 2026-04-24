@@ -1,0 +1,4 @@
+village_id,village_name,household_id,surveyor_id,survey_date,monthly_income,meals_per_day,food_source_type,food_insecure_months_per_year,child_malnutrition_yn,household_size,ration_card_yn,clean_water_access_yn,crop_failure_last_3yr,food_aid_receipt_yn,pds_access_yn,caloric_intake_score
+VLG_001,Rampur,HH_001,SRV_001,2024-01-15,4500,2,Self-grown,4,1,5,0,1,1,0,0,35
+VLG_001,Rampur,HH_002,SRV_001,2024-01-15,8000,3,Market,1,0,4,1,1,0,1,1,55
+VLG_001,Rampur,HH_003,SRV_001,2024-01-15,3000,1,Self-grown,7,1,7,0,0,2,0,0,20
