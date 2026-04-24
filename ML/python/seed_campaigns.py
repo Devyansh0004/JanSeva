@@ -59,19 +59,11 @@ def seed_campaigns():
             start_date = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=(random.randint(1, 10) if status == "Active" else -random.randint(10, 30)))
             end_date = start_date + datetime.timedelta(days=random.randint(5, 15))
             
-            # Select 100 volunteers: ~25 A, ~50 B, ~25 C
+            # Select fewer volunteers for demo purposes (e.g. 8)
             sel_vols = []
-            if len(volunteers_a) >= 25: sel_vols.extend(random.sample(volunteers_a, 25))
-            else: sel_vols.extend(volunteers_a)
-            if len(volunteers_b) >= 50: sel_vols.extend(random.sample(volunteers_b, 50))
-            else: sel_vols.extend(volunteers_b)
-            if len(volunteers_c) >= 25: sel_vols.extend(random.sample(volunteers_c, 25))
-            else: sel_vols.extend(volunteers_c)
-            
-            # ensure 100
-            diff = 100 - len(sel_vols)
-            if diff > 0 and len(volunteers_b) > 0:
-                sel_vols.extend(random.choices(volunteers_b, k=diff))
+            if len(volunteers_a) >= 2: sel_vols.extend(random.sample(volunteers_a, 2))
+            if len(volunteers_b) >= 4: sel_vols.extend(random.sample(volunteers_b, 4))
+            if len(volunteers_c) >= 2: sel_vols.extend(random.sample(volunteers_c, 2))
                 
             sel_vol_ids = [v["volunteerId"] for v in sel_vols]
             
@@ -84,7 +76,7 @@ def seed_campaigns():
                 "isEmergency": status == "Active" and random.random() < 0.2,
                 "targetAmount": budget,
                 "raisedAmount": random.randint(int(budget*0.5), budget),
-                "volunteerTarget": 100,
+                "volunteerTarget": 10,
                 "volunteers": sel_vol_ids, # $addToSet requirement
                 "startDate": start_date,
                 "endDate": end_date,
@@ -168,6 +160,10 @@ def seed_campaigns():
                     "villageName": vs["vname"],
                     "state": "Unknown",
                     "overallVulnerabilityScore": vs["score"],
+                    "healthScore": random.randint(20, 95),
+                    "foodScore": random.randint(20, 95),
+                    "educationScore": random.randint(20, 95),
+                    "shelterScore": random.randint(20, 95),
                     "vulnerabilityClass": "CRITICAL" if vs["score"] > 75 else ("HIGH" if vs["score"] > 65 else "MEDIUM"),
                     "primaryDomain": domain,
                     "computedAt": datetime.datetime.now(datetime.UTC),

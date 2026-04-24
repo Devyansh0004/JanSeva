@@ -140,6 +140,8 @@ const seed = async () => {
         address: `${randomInt(1, 500)}, Main Road, ${ngo.city}, ${ngo.state}`,
       },
       isVerified: true, // ✅ FIX: all NGOs verified so stats work
+      approvalStatus: 'approved', // ✅ FIX: all NGOs approved so dashboard works
+      isProfileComplete: true, // ✅ FIX: profile complete so dashboard redirect doesn't trigger
       impactScore: randomInt(20, 100),
       foundedYear: randomInt(1990, 2022),
     });
@@ -149,10 +151,13 @@ const seed = async () => {
   logger.info(`${NGO_DATA.length} NGOs created (all verified)`);
 
   // ── Create Volunteers ─────────────────────────────────────────────────────
+  const indianNames = ['Aarav', 'Vihaan', 'Aditya', 'Sai', 'Arjun', 'Kabir', 'Rohan', 'Aryan', 'Krishna', 'Ishaan', 'Diya', 'Ananya', 'Aadhya', 'Saanvi', 'Kavya', 'Avni', 'Riya', 'Neha', 'Priya', 'Anushka', 'Rahul', 'Vikram', 'Suresh', 'Ramesh', 'Ravi', 'Manoj', 'Pooja', 'Sneha', 'Kiran', 'Swati', 'Sanjay', 'Rajesh', 'Sunil', 'Anil', 'Deepak', 'Nitin', 'Tarun', 'Prashant', 'Vijay', 'Ashok', 'Ganesh', 'Mahesh', 'Pradeep', 'Ajay', 'Amit', 'Sachin', 'Vinay', 'Prakash', 'Sandeep', 'Dinesh', 'Anita', 'Sunita', 'Rekha', 'Seema', 'Mamta', 'Geeta', 'Asha', 'Kavita', 'Suman', 'Meena', 'Komal', 'Jyoti', 'Shalini', 'Nisha', 'Rashmi', 'Preeti', 'Poonam', 'Shikha', 'Monika', 'Bhavna', 'Gaurav', 'Varun', 'Rajat', 'Mayank', 'Harsh', 'Saurabh', 'Prateek', 'Shubham', 'Nishant', 'Ankit', 'Abhishek', 'Vishal', 'Neeraj', 'Manish', 'Naveen', 'Ashish', 'Pankaj', 'Sumit', 'Vikas', 'Rohit', 'Sahil', 'Kunal', 'Rishabh', 'Shivam', 'Ayush', 'Utkarsh', 'Pranav', 'Yash', 'Rakesh'];
   const volunteerUsers = [];
   for (let i = 1; i <= 100; i++) {
+    const firstName = indianNames[(i - 1) % indianNames.length];
+    const lastName = indianNames[(i + 50) % indianNames.length];
     volunteerUsers.push({
-      name: `Volunteer ${i}`,
+      name: `${firstName} ${lastName}`,
       email: `volunteer${i}@gmail.com`,
       password: 'Password@1234',
       role: 'volunteer',
