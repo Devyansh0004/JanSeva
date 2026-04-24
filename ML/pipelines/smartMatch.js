@@ -63,12 +63,12 @@ function buildSmartMatchPipeline(primaryDomain, villageState, topN = 5) {
     {
       $lookup: {
         from: 'volunteerscores',
-        localField: '_id',
+        localField: 'userId',
         foreignField: 'volunteerId',
         as: 'scoreData'
       }
     },
-    { $unwind: { path: '$scoreData', preserveNullAndEmpty: true } },
+    { $unwind: { path: '$scoreData', preserveNullAndEmptyArrays: true } },
 
     // Stage 3: Skill overlap score
     {
@@ -185,8 +185,7 @@ function buildSmartMatchPipeline(primaryDomain, villageState, topN = 5) {
         tier: 1,
         totalScore: { $round: ['$totalScore', 2] },
         volunteeringHours: 1,
-        rating: 1,
-        _stateLat: 0, _stateLng: 0, _latDiff: 0, _lngDiff: 0, _distDeg: 0
+        rating: 1
       }
     },
 

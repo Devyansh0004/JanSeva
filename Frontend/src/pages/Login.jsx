@@ -42,11 +42,10 @@ const Login = () => {
             <p className="page-subtitle">
               Access your dashboard, track contributions, and coordinate support through the refreshed, lighter interface.
             </p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {[
                 { label: 'Volunteer workflows', value: 'Active' },
                 { label: 'Live updates', value: '30s sync' },
-                { label: 'Impact visibility', value: 'Cleaner' },
               ].map((item) => (
                 <div key={item.label} className="glass-card p-4">
                   <p className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--text-soft)' }}>{item.label}</p>

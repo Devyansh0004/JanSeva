@@ -7,7 +7,7 @@ const DomainSkillMap = require('../../Backend/src/models/DomainSkillMap');
 
 const { buildVolunteerScoringPipeline } = require('../pipelines/volunteerScoring');
 const { buildVulnerabilityPipeline, buildOverallVulnerabilityPipeline } = require('../pipelines/villageVulnerability');
-const { buildSmartMatchPipeline } = require('../pipelines/smartMatch');
+const { buildSmartMatchPipeline, DOMAIN_SKILL_MAP } = require('../pipelines/smartMatch');
 const { buildDeploymentPipeline } = require('../pipelines/deploymentPlan');
 
 // Helper
@@ -160,12 +160,12 @@ const getRankedVolunteers = asyncHandler(async (req, res) => {
     {
       $lookup: {
         from: 'volunteerscores',
-        localField: '_id',
+        localField: 'userId',
         foreignField: 'volunteerId',
         as: 'scoreData'
       }
     },
-    { $unwind: { path: '$scoreData', preserveNullAndEmpty: true } },
+    { $unwind: { path: '$scoreData', preserveNullAndEmptyArrays: true } },
     {
       $lookup: {
         from: 'users',
@@ -174,7 +174,7 @@ const getRankedVolunteers = asyncHandler(async (req, res) => {
         as: 'userInfo'
       }
     },
-    { $unwind: { path: '$userInfo', preserveNullAndEmpty: true } },
+    { $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true } },
     { $match: matchStage },
     { $sort: { 'scoreData.totalScore': -1 } },
     { $limit: parseInt(limit) },
@@ -213,6 +213,43 @@ const getSmartMatch = asyncHandler(async (req, res) => {
   const village = await db.collection('villageScores').findOne({ villageId });
   if (!village) {
     return res.status(404).json({ success: false, message: 'Village not found in ML scores' });
+  }
+
+  // 1. Check if there's an existing assignment for this village
+  const assignment = await db.collection('assignments').findOne({ village_id: villageId });
+  
+  if (assignment) {
+    const volIds = assignment.volunteers_assigned;
+    const volProfiles = await db.collection('volunteers').find({ userId: { $in: volIds } }).toArray();
+    const userIds = volProfiles.map(v => v.userId);
+    const users = await db.collection('users').find({ _id: { $in: userIds } }).project({ name: 1, email: 1 }).toArray();
+    const userMap = {};
+    users.forEach(u => { userMap[u._id.toString()] = u; });
+
+    const volScores = await db.collection('volunteerscores').find({ volunteerId: { $in: userIds } }).toArray();
+    const scoreMap = {};
+    volScores.forEach(s => { scoreMap[s.volunteerId.toString()] = s; });
+
+    const enriched = volProfiles.map(v => {
+      const uIdStr = v.userId?.toString();
+      const score = scoreMap[uIdStr];
+      return {
+        ...v,
+        name: userMap[uIdStr]?.name || 'Unknown',
+        email: userMap[uIdStr]?.email || 'Unknown',
+        matchScore: score?.totalScore || 0,
+        tier: score?.tier || 'D',
+        matchingSkills: (v.skills || []).filter(s => (DOMAIN_SKILL_MAP[village.primaryDomain] || []).includes(s))
+      };
+    }).sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+
+    return sendSuccess(res, 200, 'Assigned volunteers fetched', {
+      village,
+      topN: enriched.length,
+      consideredCount: enriched.length,
+      matched: enriched,
+      isAssigned: true
+    });
   }
 
   const { primaryDomain, state, overallVulnerabilityScore, vulnerabilityClass } = village;

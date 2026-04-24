@@ -170,7 +170,8 @@ function buildVolunteerScoringPipeline() {
     // Stage 10: Project final output
     {
       $project: {
-        volunteerId: '$_id',
+        volunteerId: '$userId',
+        volunteerProfileId: '$_id',
         userId: 1,
         name: 1,
         skills: 1,
