@@ -74,13 +74,13 @@ const getApprovedVolunteers = asyncHandler(async (req, res, next) => {
     .populate('volunteerId', 'name email avatar')
     .sort('-respondedAt');
   
-  // We should also fetch the volunteer profiles to attach total hours, but for simplicity of the UI we can just return the user relation first.
-  // Actually, to make it easier to show their current hours, let's fetch Volunteer documents:
-  const volunteerUserIds = approved.map(req => req.volunteerId._id);
+  // Filter out orphaned requests where the user might have been deleted
+  const validApproved = approved.filter(req => req.volunteerId);
+  const volunteerUserIds = validApproved.map(req => req.volunteerId._id);
   const volunteerProfiles = await Volunteer.find({ userId: { $in: volunteerUserIds } }).lean();
   
   // Map profiles to requests
-  const responseData = approved.map(request => {
+  const responseData = validApproved.map(request => {
     const profile = volunteerProfiles.find(p => p.userId.toString() === request.volunteerId._id.toString());
     return {
       _id: request._id,
@@ -173,6 +173,29 @@ const assignHours = asyncHandler(async (req, res, next) => {
   });
 });
 
+// @desc    NGO removes/deassigns a volunteer
+// @route   DELETE /api/volunteer-ngo/:id
+// @access  Private (NGO)
+const removeVolunteer = asyncHandler(async (req, res, next) => {
+  const request = await VolunteerNGO.findById(req.params.id);
+  if (!request) return next(new AppError('Affiliation record not found', 404));
+
+  const ngo = await NGO.findOne({ userId: req.user._id });
+  if (!ngo || request.ngoId.toString() !== ngo._id.toString()) {
+    return next(new AppError('Unauthorized', 403));
+  }
+
+  await VolunteerNGO.findByIdAndDelete(req.params.id);
+
+  // Decrement volunteer count for NGO
+  if (ngo.volunteerCount > 0) {
+    ngo.volunteerCount -= 1;
+    await ngo.save();
+  }
+
+  sendSuccess(res, 200, 'Volunteer removed from your NGO successfully');
+});
+
 module.exports = {
   requestToJoinNGO,
   getMyNGOs,
@@ -180,5 +203,6 @@ module.exports = {
   getApprovedVolunteers,
   approveRequest,
   rejectRequest,
-  assignHours
+  assignHours,
+  removeVolunteer
 };

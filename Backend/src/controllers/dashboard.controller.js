@@ -219,28 +219,6 @@ const deleteNgoAccount = asyncHandler(async (req, res) => {
   sendSuccess(res, 200, 'NGO Account and associated data successfully deleted');
 });
 
-const deleteVolunteerAccount = asyncHandler(async (req, res) => {
-  if (req.user.role !== 'volunteer') throw new AppError('Unauthorized', 403);
-
-  const volunteer = await Volunteer.findOne({ userId: req.user._id });
-  if (!volunteer) throw new AppError('Volunteer profile not found', 404);
-
-  // Remove volunteer from all campaigns
-  await Campaign.updateMany(
-    { volunteers: req.user._id },
-    { $pull: { volunteers: req.user._id } }
-  );
-
-  // Delete all affiliations
-  await VolunteerAffiliation.deleteMany({ volunteerId: req.user._id });
-
-  // Delete volunteer profile and user account
-  await Volunteer.findByIdAndDelete(volunteer._id);
-  await User.findByIdAndDelete(req.user._id);
-
-  sendSuccess(res, 200, 'Volunteer Account and associated data successfully deleted');
-});
-
 module.exports = {
   getVolunteerDashboard,
   getNgoDashboard,
@@ -251,6 +229,5 @@ module.exports = {
   verifyNgo,
   toggleCampaignRegistration,
   updateProfile,
-  deleteNgoAccount,
-  deleteVolunteerAccount
+  deleteNgoAccount
 };

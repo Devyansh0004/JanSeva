@@ -73,10 +73,6 @@ const volunteerSchema = new mongoose.Schema(
       type: Number,
       default: null, // Computed periodically based on hours
     },
-    domains: {
-      type: [String], // Medical, Food, Education, Shelter
-      default: [],
-    },
     bio: {
       type: String,
       maxlength: [500, 'Bio cannot exceed 500 characters'],

@@ -10,8 +10,7 @@ const {
   verifyNgo,
   toggleCampaignRegistration,
   updateProfile,
-  deleteNgoAccount,
-  deleteVolunteerAccount
+  deleteNgoAccount
 } = require('../controllers/dashboard.controller');
 
 router.use(protect);
@@ -28,6 +27,5 @@ router.put('/verify-ngo/:id', verifyNgo);
 router.post('/campaign-toggle/:id', toggleCampaignRegistration);
 router.put('/profile', updateProfile);
 router.delete('/profile/ngo', deleteNgoAccount);
-router.delete('/profile/volunteer', deleteVolunteerAccount);
 
 module.exports = router;
