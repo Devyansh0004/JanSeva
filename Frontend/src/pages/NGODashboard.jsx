@@ -156,6 +156,23 @@ export default function NGODashboard({ user }) {
       setCreating(false)
     }
   }
+ 
+  const handleDeleteCampaign = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this campaign? This will permanently remove all village scores and volunteer assignments associated with it.')) return;
+    try {
+      const res = await fetch(`${API}/campaigns/${id}`, { method: 'DELETE', headers })
+      if (res.ok) {
+        alert('Campaign deleted successfully')
+        loadData()
+      } else {
+        const data = await res.json()
+        alert(data.message || 'Failed to delete campaign')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Error deleting campaign')
+    }
+  }
 
   if (loading) return <div className="p-8 text-center">Loading dashboard...</div>
 
@@ -368,6 +385,14 @@ export default function NGODashboard({ user }) {
                           <p className="text-xs text-gray-500">Funds Raised</p>
                         </div>
                       </div>
+ 
+                      <button 
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteCampaign(camp._id); }} 
+                        className="absolute bottom-4 right-4 p-2 text-gray-300 hover:text-red-500 transition-colors"
+                        title="Delete Campaign"
+                      >
+                        <XCircle size={18} />
+                      </button>
                     </Link>
                   ))}
                 </div>

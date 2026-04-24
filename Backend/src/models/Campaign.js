@@ -20,7 +20,7 @@ const campaignSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['Food', 'Medical', 'Shelter', 'Education', 'Emergency', 'Other'],
+      enum: ['Food', 'Medical', 'Shelter', 'Education', 'Emergency', 'Other', 'Multi-Domain Aid'],
       required: true,
     },
     isEmergency: {

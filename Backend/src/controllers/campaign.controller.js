@@ -156,6 +156,14 @@ const createCampaignWithSurvey = asyncHandler(async (req, res) => {
   const { title, description, category, targetAmount, volunteerTarget, startDate, endDate, state, city } = req.body;
   if (!title || !description || !category || !startDate || !endDate)
     throw new AppError('title, description, category, startDate, endDate are required', 400);
+ 
+  const DOMAIN_MAP = {
+    medical: 'Healthcare & Wellness',
+    food: 'Food Security & Distribution',
+    education: 'Education & Mentorship',
+    shelter: 'Shelter & Caregiving',
+    emergency: 'Emergency & Disaster Response'
+  };
 
   const NGO = require('../models/NGO');
   const ngo = await NGO.findOne({ userId: req.user._id });
@@ -173,233 +181,268 @@ const createCampaignWithSurvey = asyncHandler(async (req, res) => {
     city: city || ngo.city,
     ngoSummary: { name: ngo.name, city: ngo.city, state: ngo.state },
   });
-
-  // 2. Process CSV if provided
-  let villagesCount = 0;
-  let assignmentsCount = 0;
-
-  if (req.file) {
-    const csvData = req.file.buffer.toString('utf-8');
-    const records = parse(csvData, {
-      columns: true,
-      skip_empty_lines: true,
-      cast: true,
-    });
-
-    const villageDocs = [];
-
-    // 3. Score Villages
-    for (const row of records) {
-      // Score calculation logic translated from MongoDB Aggregation to JS
-      const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
-
-      const m_score = 
-        (100 - (row.vaccination_coverage_pct || 0)) * 0.20 +
-        (row.infant_mortality_rate_per_1000 || 0) * 0.30 +
-        (row.malnutrition_children_pct || 0) * 0.25 +
-        (row.avg_distance_to_hospital_km || 0) * 0.15 +
-        (5 - clamp(row.doctors_per_1000 || 0, 0, 5)) * 20 * 0.10;
-
-      const f_score = 
-        (row.food_insecure_households_pct || 0) * 0.35 +
-        (3 - (row.avg_meals_per_day || 0)) * 33.3 * 0.30 +
-        (100 - (row.clean_water_access_pct || 0)) * 0.15 +
-        (row.crop_failure_last_3_years || 0) * 33.3 * 0.10 +
-        (100 - (row.ration_card_coverage_pct || 0)) * 0.10;
-
-      const e_score = 
-        (100 - (row.literacy_rate_pct || 0)) * 0.25 +
-        (100 - (row.school_enrollment_pct || 0)) * 0.30 +
-        clamp((row.student_teacher_ratio || 0) - 30, 0, 50) * 2 * 0.20 +
-        (row.dropout_rate_pct || 0) * 0.15 +
-        clamp(row.distance_to_school_km || 0, 0, 20) * 5 * 0.10;
-
-      const s_score = 
-        (row.homeless_or_damaged_homes_pct || 0) * 0.30 +
-        clamp((row.avg_persons_per_room || 0) - 1, 0, 9) * 11.1 * 0.15 +
-        (row.homes_without_electricity_pct || 0) * 0.15 +
-        (row.homes_without_sanitation_pct || 0) * 0.20 +
-        (row.disaster_affected_pct || 0) * 0.20;
-
-      const overall_score = (m_score + f_score + e_score + s_score) / 4;
-
-      villageDocs.push({
-        campaignId: campaign._id,
-        village_id: row.village_id,
-        village_name: row.village_name,
-        state: row.state,
-        district: row.district,
-        population: row.population,
-        survey_date: row.survey_date ? new Date(row.survey_date) : new Date(),
-        medical: {
-          num_health_centers: row.num_health_centers,
-          avg_distance_to_hospital_km: row.avg_distance_to_hospital_km,
-          doctors_per_1000: row.doctors_per_1000,
-          vaccination_coverage_pct: row.vaccination_coverage_pct,
-          infant_mortality_rate_per_1000: row.infant_mortality_rate_per_1000,
-          malnutrition_children_pct: row.malnutrition_children_pct,
-          score: m_score
-        },
-        food: {
-          food_insecure_households_pct: row.food_insecure_households_pct,
-          avg_meals_per_day: row.avg_meals_per_day,
-          clean_water_access_pct: row.clean_water_access_pct,
-          crop_failure_last_3_years: row.crop_failure_last_3_years,
-          ration_card_coverage_pct: row.ration_card_coverage_pct,
-          score: f_score
-        },
-        education: {
-          literacy_rate_pct: row.literacy_rate_pct,
-          school_enrollment_pct: row.school_enrollment_pct,
-          student_teacher_ratio: row.student_teacher_ratio,
-          dropout_rate_pct: row.dropout_rate_pct,
-          distance_to_school_km: row.distance_to_school_km,
-          score: e_score
-        },
-        shelter: {
-          homeless_or_damaged_homes_pct: row.homeless_or_damaged_homes_pct,
-          avg_persons_per_room: row.avg_persons_per_room,
-          homes_without_electricity_pct: row.homes_without_electricity_pct,
-          homes_without_sanitation_pct: row.homes_without_sanitation_pct,
-          disaster_affected_pct: row.disaster_affected_pct,
-          score: s_score
-        },
-        overall_priority_score: overall_score
+ 
+  try {
+    // 2. Process CSV if provided
+    let villagesCount = 0;
+    let assignmentsCount = 0;
+ 
+    if (req.file) {
+      const csvData = req.file.buffer.toString('utf-8');
+      const records = parse(csvData, {
+        columns: true,
+        skip_empty_lines: true,
+        trim: true,
+        bom: true,
+        cast: true,
+        relax_column_count: true
       });
-    }
-
-    const insertedVillages = await Village.insertMany(villageDocs);
-    villagesCount = insertedVillages.length;
-
-    // 4. Volunteer Ranking
-    const volsToRank = await Volunteer.find({}).sort({ volunteeringHours: -1 });
-    let currentRank = 1;
-    for (const v of volsToRank) {
-      await Volunteer.updateOne({ _id: v._id }, { $set: { rank: currentRank++ } });
-    }
-
-    // 5. Multi-Domain Assignment Logic
-    let domainTargetsObj = {};
-    if (req.body.domainTargets) {
-      try {
-        domainTargetsObj = JSON.parse(req.body.domainTargets);
-      } catch(e) {}
-    } else {
-      // Fallback
-      domainTargetsObj[category.toLowerCase()] = { villages: 3, volunteers: volunteerTarget };
-    }
-
-    const assignmentDocs = [];
-    const allAssignedVolIds = new Set();
-    const activeDomains = Object.keys(domainTargetsObj).map(d => d.toLowerCase());
-
-    const domainSelectedVillages = {};
-    let globalTotalScore = 0;
-
-    for (const domainStr of activeDomains) {
-      const targets = domainTargetsObj[domainStr];
-      const targetV = parseInt(targets.villages) || 3;
-      
-      const topVillages = [...insertedVillages].sort((a, b) => {
-        const scoreA = a[domainStr]?.score || 0;
-        const scoreB = b[domainStr]?.score || 0;
-        return scoreB - scoreA;
-      }).slice(0, targetV);
-
-      domainSelectedVillages[domainStr] = topVillages;
-      
-      topVillages.forEach(v => {
-        globalTotalScore += (v[domainStr]?.score || 0);
-      });
-    }
-
-    const targetAmount = parseFloat(req.body.targetAmount) || 0;
-
-    for (const domainStr of activeDomains) {
-      const targets = domainTargetsObj[domainStr];
-      const topVillages = domainSelectedVillages[domainStr];
-      const totalVolunteersForDomain = parseInt(targets.volunteers) || 10;
-      
-      const matchedVols = await Volunteer.find({ domains: domainStr }).sort({ rank: 1 });
-      const K = topVillages.length;
-      
-      if (K > 0 && matchedVols.length > 0) {
-        const domainTotalScore = topVillages.reduce((sum, v) => sum + (v[domainStr]?.score || 0), 0);
-
-        // 1. Calculate how many volunteers each village needs proportionally
-        const villageNeeds = topVillages.map(village => {
-          const score = village[domainStr]?.score || 0;
-          let needed = 0;
-          if (domainTotalScore > 0) {
-            needed = Math.round((score / domainTotalScore) * totalVolunteersForDomain);
-          }
-          if (needed === 0 && totalVolunteersForDomain > 0) needed = 1;
-          return needed;
-        });
-
-        const totalNeededAcrossDomain = villageNeeds.reduce((a, b) => a + b, 0);
-        const volsToDeal = matchedVols.slice(0, totalNeededAcrossDomain);
-        
-        const groups = Array.from({ length: K }, () => []);
-        let volIndex = 0;
-        let villagesStillNeeding = true;
-        
-        // 2. Capacity-Aware Round Robin Dealing
-        while (volIndex < volsToDeal.length && villagesStillNeeding) {
-          villagesStillNeeding = false;
-          for (let idx = 0; idx < K; idx++) {
-            if (groups[idx].length < villageNeeds[idx] && volIndex < volsToDeal.length) {
-              groups[idx].push(volsToDeal[volIndex]);
-              volIndex++;
-              villagesStillNeeding = true;
-            }
-          }
-        }
-
-        topVillages.forEach((village, idx) => {
-          const score = village[domainStr]?.score || 0;
-          
-          let fundsAssigned = 0;
-          if (globalTotalScore > 0) {
-            fundsAssigned = Math.round((score / globalTotalScore) * targetAmount);
-          }
-
-          const needed = villageNeeds[idx];
-          const group = groups[idx];
-          
-          assignmentDocs.push({
-            campaignId: campaign._id,
-            village_id: village.village_id,
-            village_name: village.village_name,
-            domain: domainStr,
-            priority_rank: idx + 1,
-            domain_score: score,
-            funds_assigned: fundsAssigned,
-            volunteers_needed: needed,
-            volunteers_assigned: group.map(g => g.userId),
-            group_id: `GRP_${domainStr.substring(0,3).toUpperCase()}_${idx+1}`,
-            group_rank_spread: group.map(g => g.rank)
-          });
-
-          group.forEach(g => allAssignedVolIds.add(g.userId.toString()));
+ 
+      const villageDocs = [];
+ 
+      // 3. Score Villages
+      for (const row of records) {
+        // Score calculation logic translated from MongoDB Aggregation to JS
+        const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
+ 
+        const m_score = 
+          (100 - (row.vaccination_coverage_pct || 0)) * 0.20 +
+          (row.infant_mortality_rate_per_1000 || 0) * 0.30 +
+          (row.malnutrition_children_pct || 0) * 0.25 +
+          (row.avg_distance_to_hospital_km || 0) * 0.15 +
+          (5 - clamp(row.doctors_per_1000 || 0, 0, 5)) * 20 * 0.10;
+ 
+        const f_score = 
+          (row.food_insecure_households_pct || 0) * 0.35 +
+          (3 - (row.avg_meals_per_day || 0)) * 33.3 * 0.30 +
+          (100 - (row.clean_water_access_pct || 0)) * 0.15 +
+          (row.crop_failure_last_3_years || 0) * 33.3 * 0.10 +
+          (100 - (row.ration_card_coverage_pct || 0)) * 0.10;
+ 
+        const e_score = 
+          (100 - (row.literacy_rate_pct || 0)) * 0.25 +
+          (100 - (row.school_enrollment_pct || 0)) * 0.30 +
+          clamp((row.student_teacher_ratio || 0) - 30, 0, 50) * 2 * 0.20 +
+          (row.dropout_rate_pct || 0) * 0.15 +
+          clamp(row.distance_to_school_km || 0, 0, 20) * 5 * 0.10;
+ 
+        const s_score = 
+          (row.homeless_or_damaged_homes_pct || 0) * 0.30 +
+          clamp((row.avg_persons_per_room || 0) - 1, 0, 9) * 11.1 * 0.15 +
+          (row.homes_without_electricity_pct || 0) * 0.15 +
+          (row.homes_without_sanitation_pct || 0) * 0.20 +
+          (row.disaster_affected_pct || 0) * 0.20;
+ 
+        const overall_score = (m_score + f_score + e_score + s_score) / 4;
+ 
+        villageDocs.push({
+          campaignId: campaign._id,
+          village_id: row.village_id || `VIL_${Math.random().toString(36).substr(2, 5)}`,
+          village_name: row.village_name || 'Unnamed Village',
+          state: row.state || ngo.state,
+          district: row.district || ngo.city,
+          population: parseInt(row.population) || 1000,
+          survey_date: row.survey_date ? new Date(row.survey_date) : new Date(),
+          medical: {
+            num_health_centers: row.num_health_centers,
+            avg_distance_to_hospital_km: row.avg_distance_to_hospital_km,
+            doctors_per_1000: row.doctors_per_1000,
+            vaccination_coverage_pct: row.vaccination_coverage_pct,
+            infant_mortality_rate_per_1000: row.infant_mortality_rate_per_1000,
+            malnutrition_children_pct: row.malnutrition_children_pct,
+            score: m_score
+          },
+          food: {
+            food_insecure_households_pct: row.food_insecure_households_pct,
+            avg_meals_per_day: row.avg_meals_per_day,
+            clean_water_access_pct: row.clean_water_access_pct,
+            crop_failure_last_3_years: row.crop_failure_last_3_years,
+            ration_card_coverage_pct: row.ration_card_coverage_pct,
+            score: f_score
+          },
+          education: {
+            literacy_rate_pct: row.literacy_rate_pct,
+            school_enrollment_pct: row.school_enrollment_pct,
+            student_teacher_ratio: row.student_teacher_ratio,
+            dropout_rate_pct: row.dropout_rate_pct,
+            distance_to_school_km: row.distance_to_school_km,
+            score: e_score
+          },
+          shelter: {
+            homeless_or_damaged_homes_pct: row.homeless_or_damaged_homes_pct,
+            avg_persons_per_room: row.avg_persons_per_room,
+            homes_without_electricity_pct: row.homes_without_electricity_pct,
+            homes_without_sanitation_pct: row.homes_without_sanitation_pct,
+            disaster_affected_pct: row.disaster_affected_pct,
+            score: s_score
+          },
+          overall_priority_score: overall_score
         });
       }
+ 
+      const insertedVillages = await Village.insertMany(villageDocs);
+      villagesCount = insertedVillages.length;
+ 
+      // 4. Volunteer Ranking
+      const volsToRank = await Volunteer.find({}).sort({ volunteeringHours: -1 });
+      let currentRank = 1;
+      for (const v of volsToRank) {
+        await Volunteer.updateOne({ _id: v._id }, { $set: { rank: currentRank++ } });
+      }
+ 
+      // 5. Multi-Domain Assignment Logic
+      let domainTargetsObj = {};
+      if (req.body.domainTargets) {
+        try {
+          domainTargetsObj = JSON.parse(req.body.domainTargets);
+        } catch(e) {}
+      } else {
+        // Fallback
+        domainTargetsObj[category.toLowerCase()] = { villages: 3, volunteers: volunteerTarget };
+      }
+ 
+      const assignmentDocs = [];
+      const allAssignedVolIds = new Set();
+      const activeDomains = Object.keys(domainTargetsObj).map(d => d.toLowerCase());
+ 
+      const domainSelectedVillages = {};
+      let globalTotalScore = 0;
+ 
+      for (const domainStr of activeDomains) {
+        const targets = domainTargetsObj[domainStr];
+        const targetV = parseInt(targets.villages) || 3;
+        
+        const topVillages = [...insertedVillages].sort((a, b) => {
+          const scoreA = a[domainStr]?.score || 0;
+          const scoreB = b[domainStr]?.score || 0;
+          return scoreB - scoreA;
+        }).slice(0, targetV);
+ 
+        domainSelectedVillages[domainStr] = topVillages;
+        
+        topVillages.forEach(v => {
+          globalTotalScore += (v[domainStr]?.score || 0);
+        });
+      }
+ 
+      const targetAmount = parseFloat(req.body.targetAmount) || 0;
+ 
+      for (const domainStr of activeDomains) {
+        const targets = domainTargetsObj[domainStr];
+        const topVillages = domainSelectedVillages[domainStr];
+        const totalVolunteersForDomain = parseInt(targets.volunteers) || 10;
+        
+        const dbDomain = DOMAIN_MAP[domainStr] || domainStr;
+        const matchedVols = await Volunteer.find({ domains: dbDomain }).sort({ rank: 1 });
+        const K = topVillages.length;
+        
+        if (K > 0 && matchedVols.length > 0) {
+          const domainTotalScore = topVillages.reduce((sum, v) => sum + (v[domainStr]?.score || 0), 0);
+ 
+          // 1. Calculate how many volunteers each village needs proportionally
+          const villageNeeds = topVillages.map(village => {
+            const score = village[domainStr]?.score || 0;
+            let needed = 0;
+            if (domainTotalScore > 0) {
+              needed = Math.round((score / domainTotalScore) * totalVolunteersForDomain);
+            }
+            if (needed === 0 && totalVolunteersForDomain > 0) needed = 1;
+            return needed;
+          });
+ 
+          const totalNeededAcrossDomain = villageNeeds.reduce((a, b) => a + b, 0);
+          const volsToDeal = matchedVols.slice(0, totalNeededAcrossDomain);
+          
+          const groups = Array.from({ length: K }, () => []);
+          let volIndex = 0;
+          let villagesStillNeeding = true;
+          
+          // 2. Capacity-Aware Round Robin Dealing
+          while (volIndex < volsToDeal.length && villagesStillNeeding) {
+            villagesStillNeeding = false;
+            for (let idx = 0; idx < K; idx++) {
+              if (groups[idx].length < villageNeeds[idx] && volIndex < volsToDeal.length) {
+                groups[idx].push(volsToDeal[volIndex]);
+                volIndex++;
+                villagesStillNeeding = true;
+              }
+            }
+          }
+ 
+          topVillages.forEach((village, idx) => {
+            const score = village[domainStr]?.score || 0;
+            
+            let fundsAssigned = 0;
+            if (globalTotalScore > 0) {
+              fundsAssigned = Math.round((score / globalTotalScore) * targetAmount);
+            }
+ 
+            const needed = villageNeeds[idx];
+            const group = groups[idx];
+            
+            assignmentDocs.push({
+              campaignId: campaign._id,
+              village_id: village.village_id,
+              village_name: village.village_name,
+              domain: domainStr,
+              priority_rank: idx + 1,
+              domain_score: score,
+              funds_assigned: fundsAssigned,
+              volunteers_needed: needed,
+              volunteers_assigned: group.map(g => g.userId),
+              group_id: `GRP_${domainStr.substring(0,3).toUpperCase()}_${idx+1}`,
+              group_rank_spread: group.map(g => g.rank)
+            });
+ 
+            group.forEach(g => allAssignedVolIds.add(g.userId.toString()));
+          });
+        }
+      }
+ 
+      if (assignmentDocs.length > 0) {
+        await Assignment.insertMany(assignmentDocs);
+        assignmentsCount = assignmentDocs.length;
+        
+        campaign.volunteers = Array.from(allAssignedVolIds);
+        await campaign.save();
+      }
     }
-
-    if (assignmentDocs.length > 0) {
-      await Assignment.insertMany(assignmentDocs);
-      assignmentsCount = assignmentDocs.length;
-      
-      campaign.volunteers = Array.from(allAssignedVolIds);
-      await campaign.save();
-    }
+ 
+    sendSuccess(res, 201, 'Campaign created and surveyed successfully', {
+      campaign,
+      villagesProcessed: villagesCount,
+      assignmentsCreated: assignmentsCount
+    });
+  } catch (err) {
+    // 6. Rollback Campaign Creation on failure to prevent orphan campaigns
+    await Campaign.findByIdAndDelete(campaign._id);
+    throw err;
   }
+});
 
-  sendSuccess(res, 201, 'Campaign created and surveyed successfully', {
-    campaign,
-    villagesProcessed: villagesCount,
-    assignmentsCreated: assignmentsCount
-  });
+// ─── DELETE /api/campaigns/:id — NGO deletes their campaign ──────────────────
+const deleteCampaign = asyncHandler(async (req, res) => {
+  const campaign = await Campaign.findById(req.params.id);
+  if (!campaign) throw new AppError('Campaign not found', 404);
+ 
+  // Check ownership
+  const NGO = require('../models/NGO');
+  const ngo = await NGO.findOne({ userId: req.user._id });
+  if (!ngo || campaign.ngoId.toString() !== ngo._id.toString()) {
+    throw new AppError('You do not have permission to delete this campaign', 403);
+  }
+ 
+  // Delete related data: Villages and Assignments
+  const Village = require('../models/Village');
+  const Assignment = require('../models/Assignment');
+  
+  await Promise.all([
+    Village.deleteMany({ campaignId: campaign._id }),
+    Assignment.deleteMany({ campaignId: campaign._id }),
+    Campaign.findByIdAndDelete(campaign._id)
+  ]);
+ 
+  sendSuccess(res, 200, 'Campaign and all associated data deleted successfully');
 });
 
 // ─── GET /api/campaigns/ngo/:id — NGO Campaign Details with Assignments ───────
@@ -461,4 +504,4 @@ const getCampaignDetailsNGO = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { getCampaigns, createCampaign, createCampaignWithSurvey, joinCampaign, leaveCampaign, getMyCampaigns, getNgoCampaigns, getCampaignById, getCampaignDetailsNGO, getCampaignStats };
+module.exports = { getCampaigns, createCampaign, createCampaignWithSurvey, joinCampaign, leaveCampaign, getMyCampaigns, getNgoCampaigns, getCampaignById, getCampaignDetailsNGO, getCampaignStats, deleteCampaign };
