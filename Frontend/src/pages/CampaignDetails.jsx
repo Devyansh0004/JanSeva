@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Users, Activity, Brain, Calendar, DollarSign, Target } from 'lucide-react'
+import { ArrowLeft, Users, Activity, Brain, Calendar, DollarSign, Target, ChevronDown, ChevronUp, Table } from 'lucide-react'
 
 const API = 'http://localhost:5000/api'
 
@@ -15,6 +15,7 @@ export default function CampaignDetails() {
   const [targetAmount, setTargetAmount] = useState(0)
   const [volunteerTarget, setVolunteerTarget] = useState(0)
   const [saving, setSaving] = useState(false)
+  const [showSurveyData, setShowSurveyData] = useState(false)
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -180,6 +181,58 @@ export default function CampaignDetails() {
             Go to ML Hub
           </button>
         </div>
+
+        {/* Raw Survey Data */}
+        {data.rawSurvey && data.rawSurvey.length > 0 && (
+          <div className="bg-white rounded-2xl p-6 border shadow-sm">
+            <button
+              onClick={() => setShowSurveyData(s => !s)}
+              className="w-full flex items-center justify-between text-left"
+            >
+              <div className="flex items-center gap-2">
+                <Table size={20} className="text-blue-500" />
+                <h2 className="text-lg font-black text-gray-800">Village Survey Data</h2>
+                <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">{data.rawSurvey.length} villages</span>
+              </div>
+              {showSurveyData ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
+            </button>
+
+            {showSurveyData && (
+              <div className="mt-5 overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="text-left px-3 py-2 border font-bold text-gray-600">Village</th>
+                      <th className="text-left px-3 py-2 border font-bold text-gray-600">State</th>
+                      <th className="text-left px-3 py-2 border font-bold text-gray-600">District</th>
+                      <th className="text-right px-3 py-2 border font-bold text-gray-600">Population</th>
+                      <th className="text-right px-3 py-2 border font-bold text-red-600">Medical</th>
+                      <th className="text-right px-3 py-2 border font-bold text-green-600">Food</th>
+                      <th className="text-right px-3 py-2 border font-bold text-blue-600">Education</th>
+                      <th className="text-right px-3 py-2 border font-bold text-yellow-600">Shelter</th>
+                      <th className="text-right px-3 py-2 border font-bold text-purple-600">Overall</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.rawSurvey.map((row, i) => (
+                      <tr key={row._id || i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <td className="px-3 py-2 border font-bold text-gray-800">{row.village_name}</td>
+                        <td className="px-3 py-2 border text-gray-600">{row.state}</td>
+                        <td className="px-3 py-2 border text-gray-600">{row.district}</td>
+                        <td className="px-3 py-2 border text-right text-gray-600">{row.population?.toLocaleString()}</td>
+                        <td className="px-3 py-2 border text-right font-bold text-red-600">{row.medical?.score?.toFixed(1) ?? '—'}</td>
+                        <td className="px-3 py-2 border text-right font-bold text-green-600">{row.food?.score?.toFixed(1) ?? '—'}</td>
+                        <td className="px-3 py-2 border text-right font-bold text-blue-600">{row.education?.score?.toFixed(1) ?? '—'}</td>
+                        <td className="px-3 py-2 border text-right font-bold text-yellow-600">{row.shelter?.score?.toFixed(1) ?? '—'}</td>
+                        <td className="px-3 py-2 border text-right font-bold text-purple-700">{row.overall_priority_score?.toFixed(1) ?? '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
     </div>

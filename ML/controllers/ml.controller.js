@@ -154,7 +154,7 @@ const getRankedVolunteers = asyncHandler(async (req, res) => {
   }
 
   const pipeline = [];
-  if (volunteerIds) pipeline.push({ $match: { _id: { $in: volunteerIds } } });
+  if (volunteerIds) pipeline.push({ $match: { userId: { $in: volunteerIds } } });
 
   pipeline.push(
     {
@@ -367,112 +367,173 @@ const recompute = asyncHandler(async (req, res) => {
 });
 
 // ─── POST /api/ml/campaign/:id/run-matching ─────────────────────────────────
+// Proportional + diverse volunteer allocation per village
 const runMatching = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const db = mongoose.connection.db;
   const campaignId = new mongoose.Types.ObjectId(id);
+  const maxVillages = parseInt(req.query.maxVillages || req.body.maxVillages || 0) || null;
 
-  // 1. Fetch Campaign
   const campaign = await db.collection('campaigns').findOne({ _id: campaignId });
   if (!campaign) return res.status(404).json({ success: false, message: 'Campaign not found' });
 
-  // 2. Fetch registered volunteers
-  const registered = await db.collection('campaignregistrations').find({ campaignId, status: 'registered' }).toArray();
+  const registered = await db.collection('campaignregistrations').find({ campaignId }).toArray();
   if (!registered.length) return res.status(400).json({ success: false, message: 'No registered volunteers found' });
 
   const volIds = registered.map(r => r.volunteerId);
-  const scores = await db.collection('volunteerscores').find({ volunteerId: { $in: volIds } }).sort({ totalScore: -1 }).toArray();
+  const allScores = await db.collection('volunteerscores')
+    .find({ volunteerId: { $in: volIds } }).sort({ totalScore: -1 }).toArray();
+  if (!allScores.length) return res.status(400).json({ success: false, message: 'No volunteer scores found. Run recompute first.' });
 
-  // Tier rotation
-  const tierA = scores.filter(s => s.tier === 'A');
-  const tierB = scores.filter(s => s.tier === 'B' || s.tier === 'C');
-  const tierC = scores.filter(s => s.tier === 'D');
 
-  const selected = [];
-  selected.push(...tierA.slice(0, 25));
-  selected.push(...tierB.slice(0, 50));
-  selected.push(...tierC.slice(0, 25));
 
-  if (selected.length < 100) {
-    const remaining = scores.filter(s => !selected.includes(s));
-    selected.push(...remaining.slice(0, 100 - selected.length));
-  }
+  // Fetch domain expertise per volunteer
+  const volProfiles = await db.collection('volunteers').find({ userId: { $in: volIds } }).toArray();
+  const domainMap = {};
+  for (const vp of volProfiles) domainMap[vp.userId.toString()] = vp.domains || [];
 
-  const selectedUserIds = selected.map(s => s.volunteerId);
-
-  // 3. Assign to villages (VillageScores)
-  const vScores = await db.collection('villageScores').find({ campaignId }).sort({ overallVulnerabilityScore: -1 }).toArray();
+  let vScores = await db.collection('villageScores')
+    .find({ campaignId }).sort({ overallVulnerabilityScore: -1 }).toArray();
   if (!vScores.length) return res.status(400).json({ success: false, message: 'No village scores found for this campaign' });
-  
-  // Actually, we'll just do sequential writes
-  // a. Update matched
-  for (const s of selected) {
-    await db.collection('campaignregistrations').updateOne(
-      { campaignId, volunteerId: s.volunteerId },
-      { $set: { status: 'matched', matchScore: s.totalScore || 80, assignedVillageId: vScores[0].villageId } }
-    );
-  }
-  
-  // b. Update rejected
-  await db.collection('campaignregistrations').updateMany(
-    { campaignId, volunteerId: { $nin: selectedUserIds } },
-    { $set: { status: 'rejected' } }
-  );
+  if (maxVillages && maxVillages > 0) vScores = vScores.slice(0, maxVillages);
 
-  // c. Create Assignments
   await db.collection('assignments').deleteMany({ campaignId });
-  const chunk = Math.ceil(selected.length / vScores.length);
   const newAssignments = [];
-  
-  for (let i = 0; i < vScores.length; i++) {
-    const chunkVols = selected.slice(i * chunk, (i + 1) * chunk);
-    if (!chunkVols.length) continue;
-    
-    newAssignments.push({
-      campaignId,
-      village_id: vScores[i].villageId,
-      village_name: vScores[i].villageName,
-      domain: campaign.category,
-      priority_rank: i + 1,
-      domain_score: vScores[i].overallVulnerabilityScore,
-      funds_assigned: Math.floor((campaign.targetAmount || 0) / vScores.length),
-      volunteers_needed: chunkVols.length,
-      volunteers_assigned: chunkVols.map(v => v.volunteerId),
-      group_id: `GRP_${vScores[i].villageId}`,
-      group_rank_spread: chunkVols.map(v => v.totalScore),
-      createdAt: new Date(),
-      updatedAt: new Date()
+  const allAssigned = new Set();
+
+  // Helper: proportional-cap + round-robin interleaved assignment
+  // Each village's quota is proportional to its vulnerability score.
+  // Volunteers are distributed by cycling (vol[0]→v1, vol[1]→v2, vol[2]→v3, vol[3]→v1 ...)
+  // so each village gets a SPREAD of high and low ranked volunteers instead of a sequential block.
+  const assignToVillages = async (villages, volPool, domainLabel, totalBudget) => {
+    if (!villages.length || !volPool.length) return;
+
+    const totalVuln = villages.reduce((s, v) => s + (v.overallVulnerabilityScore || 0), 0);
+    // Total pool capped at 40 to avoid giant groups
+    const poolSize = Math.min(volPool.length, 40);
+
+    // Proportional allocation per village — at least 3 each
+    const allocs = villages.map(v => {
+      const prop = totalVuln > 0 ? (v.overallVulnerabilityScore || 0) / totalVuln : 1 / villages.length;
+      return Math.max(3, Math.round(prop * poolSize));
     });
-    
-    // Update proper assignedVillageId
-    for (const cv of chunkVols) {
-      await db.collection('campaignregistrations').updateOne(
-        { campaignId, volunteerId: cv.volunteerId },
-        { $set: { assignedVillageId: vScores[i].villageId } }
-      );
+
+    // Interleave: merge experienced (A/B) and novice (C/D) alternately so the
+    // round-robin cycle itself delivers a mixed tier to every village slot
+    const exp = volPool.filter(s => s.tier === 'A' || s.tier === 'B');
+    const nov = volPool.filter(s => s.tier === 'C' || s.tier === 'D');
+    const interleaved = [];
+    const maxLen = Math.max(exp.length, nov.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (i < exp.length) interleaved.push(exp[i]);
+      if (i < nov.length) interleaved.push(nov[i]);
     }
-  }
-  
-  if (newAssignments.length) {
-    await db.collection('assignments').insertMany(newAssignments);
+
+    // Initialize per-village buckets
+    const buckets = villages.map(() => []);
+    let viCursor = 0;
+
+    for (const vol of interleaved) {
+      if (allAssigned.has(vol.volunteerId.toString())) continue;
+
+      // Find the next village (from cursor) that still has quota
+      let placed = false;
+      for (let attempt = 0; attempt < villages.length; attempt++) {
+        const vi = (viCursor + attempt) % villages.length;
+        if (buckets[vi].length < allocs[vi]) {
+          buckets[vi].push(vol);
+          allAssigned.add(vol.volunteerId.toString());
+          viCursor = (vi + 1) % villages.length; // advance cursor
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) break; // all villages are full
+    }
+
+    // Persist assignments
+    for (let i = 0; i < villages.length; i++) {
+      const village = villages[i];
+      const prop = totalVuln > 0 ? (village.overallVulnerabilityScore || 0) / totalVuln : 1 / villages.length;
+      const vols = buckets[i];
+      if (!vols.length) continue;
+
+      const volUserIds = vols.map(v => v.volunteerId);
+      newAssignments.push({
+        campaignId, village_id: village.villageId, village_name: village.villageName,
+        domain: domainLabel, priority_rank: newAssignments.length + 1,
+        domain_score: village.overallVulnerabilityScore,
+        funds_assigned: totalVuln > 0 ? Math.round(prop * totalBudget) : Math.floor(totalBudget / villages.length),
+        volunteers_needed: vols.length, volunteers_assigned: volUserIds,
+        group_id: `GRP_${domainLabel.substring(0,3).toUpperCase()}_${village.villageId}`,
+        group_rank_spread: vols.map(v => v.totalScore), createdAt: new Date(), updatedAt: new Date()
+      });
+      for (const v of vols) {
+        await db.collection('campaignregistrations').updateOne(
+          { campaignId, volunteerId: v.volunteerId },
+          { $set: { status: 'matched', matchScore: v.totalScore || 0, assignedVillageId: village.villageId } }
+        );
+      }
+    }
+  };
+
+  // Domain keyword → volunteer domain string matching
+  const DOMAIN_MATCH = {
+    food:      kw => kw.toLowerCase().includes('food') || kw.toLowerCase().includes('nutri') || kw.toLowerCase().includes('agri'),
+    medical:   kw => kw.toLowerCase().includes('health') || kw.toLowerCase().includes('medic') || kw.toLowerCase().includes('wellness'),
+    education: kw => kw.toLowerCase().includes('educ') || kw.toLowerCase().includes('teach') || kw.toLowerCase().includes('mentor'),
+    shelter:   kw => kw.toLowerCase().includes('shelter') || kw.toLowerCase().includes('construct') || kw.toLowerCase().includes('care'),
+  };
+
+  const isMultiDomain = campaign.category === 'Other';
+
+  if (isMultiDomain) {
+    // Group villages by their most-vulnerable domain
+    const groups = { food: [], medical: [], education: [], shelter: [] };
+    for (const v of vScores) {
+      const domScores = {
+        food: v.foodScore || 0, medical: v.healthScore || 0,
+        education: v.educationScore || 0, shelter: v.shelterScore || 0
+      };
+      const primary = Object.entries(domScores).sort((a, b) => b[1] - a[1])[0][0];
+      groups[primary].push(v);
+    }
+
+    // For each domain group, find volunteers with matching expertise
+    for (const [domain, villages] of Object.entries(groups)) {
+      if (!villages.length) continue;
+      const matcher = DOMAIN_MATCH[domain];
+      const domainVols = allScores.filter(s => {
+        const volDomains = domainMap[s.volunteerId.toString()] || [];
+        return volDomains.some(d => matcher(d));
+      });
+      // Fallback if not enough domain specialists
+      const pool = domainVols.length >= 3
+        ? domainVols.filter(s => !allAssigned.has(s.volunteerId.toString()))
+        : allScores.filter(s => !allAssigned.has(s.volunteerId.toString()));
+
+      const domainBudget = Math.floor((campaign.targetAmount || 0) / 4);
+      await assignToVillages(villages, pool, domain, domainBudget);
+    }
+  } else {
+    // Single-domain: proportional + diverse across all villages
+    const pool = allScores.filter(s => !allAssigned.has(s.volunteerId.toString()));
+    await assignToVillages(vScores, pool, campaign.category, campaign.targetAmount || 0);
   }
 
-  // d. addToSet Campaign.volunteers
-  await db.collection('campaigns').updateOne(
-    { _id: campaignId },
-    { $addToSet: { volunteers: { $each: selectedUserIds } } }
+  const assignedUserIds = [...allAssigned].map(id => new mongoose.Types.ObjectId(id));
+  await db.collection('campaignregistrations').updateMany(
+    { campaignId, volunteerId: { $nin: assignedUserIds } }, { $set: { status: 'rejected' } }
   );
-
-  // e. Report
+  if (newAssignments.length) await db.collection('assignments').insertMany(newAssignments);
+  await db.collection('campaigns').updateOne(
+    { _id: campaignId }, { $addToSet: { volunteers: { $each: assignedUserIds } } }
+  );
   await db.collection('campaignreports').insertOne({
-    campaignId,
-    ngoId: campaign.ngoId,
-    generatedAt: new Date(),
-    matchedCount: selected.length,
-    villagesAssigned: newAssignments.length
+    campaignId, ngoId: campaign.ngoId, generatedAt: new Date(),
+    matchedCount: assignedUserIds.length, villagesAssigned: newAssignments.length
   });
-
-  res.json({ success: true, message: 'Matching successful', matchedCount: selected.length });
+  res.json({ success: true, message: 'Matching successful', matchedCount: assignedUserIds.length, villagesAssigned: newAssignments.length });
 });
 
 module.exports = { getStats, getVillageRankings, getVillageDetail, getRankedVolunteers, getSmartMatch, getDeploymentPlan, recompute, runMatching };

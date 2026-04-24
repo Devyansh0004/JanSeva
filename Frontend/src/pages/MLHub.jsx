@@ -26,6 +26,7 @@ export default function MLHub() {
   const [deployment, setDeployment] = useState([])
   const [selectedVillage, setSelectedVillage] = useState(null)
   const [smartMatch, setSmartMatch] = useState(null)
+  const [maxVillages, setMaxVillages] = useState(3)
   
   const [loading, setLoading] = useState(true)
   const [runningMatch, setRunningMatch] = useState(false)
@@ -93,14 +94,14 @@ export default function MLHub() {
     setRunningMatch(true)
     const token = localStorage.getItem('janseva_token')
     try {
-      const res = await fetch(`${API}/ml/campaign/${campaignId}/run-matching`, {
+      const res = await fetch(`${API}/ml/campaign/${campaignId}/run-matching?maxVillages=${maxVillages}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       })
       const data = await res.json()
       if (data.success) {
         setMatchSuccess(true)
-        // Refresh deployment plan
+        setDeployment([]) // force re-fetch
         const depRes = await fetch(`${API}/ml/deployment-plan?campaignId=${campaignId}`, { headers: { Authorization: `Bearer ${token}` } })
         const depData = await depRes.json()
         if (depData.success) setDeployment(depData.data)
@@ -197,7 +198,16 @@ export default function MLHub() {
 
         {/* Action Button for Deployment Plan */}
         {tab === 'deployment' && (
-          <div className="mb-6 flex justify-end">
+          <div className="mb-6 flex items-center justify-end gap-3">
+            <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Top Villages</span>
+              <input
+                type="number" min="1" max="20"
+                value={maxVillages}
+                onChange={e => setMaxVillages(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-14 text-center font-black text-gray-900 text-sm border-b border-gray-300 focus:outline-none focus:border-blue-500 bg-transparent"
+              />
+            </div>
             <button 
               onClick={handleRunMatch}
               disabled={runningMatch}
@@ -307,11 +317,16 @@ export default function MLHub() {
                       ))}
                     </div>
 
-                    <div className="flex items-center justify-between text-[10px] font-bold">
-                      <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full flex items-center gap-1">
-                        {v.primaryDomain?.includes('Food') ? '🍱' : v.primaryDomain?.includes('Education') ? '🎓' : v.primaryDomain?.includes('Shelter') ? '🏠' : '🏥'}
-                        {v.primaryDomain?.split(' ')[0] || 'Domain'}
-                      </span>
+                    <div className="flex items-center justify-between text-[10px] font-bold flex-wrap gap-1">
+                      <div className="flex gap-1 flex-wrap">
+                        {v.foodScore > 15 && <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-200 flex items-center gap-0.5">🍱 Food</span>}
+                        {v.healthScore > 15 && <span className="bg-red-50 text-red-700 px-2 py-0.5 rounded-full border border-red-200 flex items-center gap-0.5">🏥 Medical</span>}
+                        {v.educationScore > 15 && <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 flex items-center gap-0.5">🎓 Education</span>}
+                        {v.shelterScore > 15 && <span className="bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded-full border border-yellow-200 flex items-center gap-0.5">🏠 Shelter</span>}
+                        {!(v.foodScore > 15 || v.healthScore > 15 || v.educationScore > 15 || v.shelterScore > 15) && (
+                          <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">{v.primaryDomain || 'General'}</span>
+                        )}
+                      </div>
                       <span className="text-gray-400">Pop: {v.population?.toLocaleString() || 'N/A'}</span>
                     </div>
                   </div>
@@ -475,7 +490,10 @@ export default function MLHub() {
         {/* Volunteers Tab */}
         {tab === 'volunteers' && (
           <div className="bg-white rounded-2xl border shadow-sm p-8">
-            <h3 className="font-extrabold text-xl text-gray-800 mb-6">Registered Campaign Volunteers</h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-extrabold text-xl text-gray-800">Registered Campaign Volunteers</h3>
+              {volunteers.length > 0 && <span className="text-sm font-bold text-gray-400 bg-gray-100 px-3 py-1 rounded-full">{volunteers.length} registered</span>}
+            </div>
             
             {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-green-500" size={32}/></div> : 
              volunteers.length === 0 ? (
@@ -488,25 +506,44 @@ export default function MLHub() {
                 {volunteers.map((v, idx) => (
                   <div key={v._id} className="border border-gray-100 rounded-xl p-4 bg-gray-50 hover:bg-white hover:shadow-md transition">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-black">{v.name?.charAt(0) || '?'}</div>
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-black text-sm">
+                        {idx + 1}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-extrabold text-gray-900 truncate leading-tight">{v.name || 'Unknown'}</p>
                         <p className="text-[11px] text-gray-500 font-medium truncate">{v.location?.city}, {v.location?.state}</p>
                       </div>
                       <span className={`text-xs font-black px-2 py-1 rounded border ${TIER_COLORS[v.tier] || TIER_COLORS.D}`}>Tier {v.tier}</span>
                     </div>
-                    <div className="flex justify-between items-end mb-2">
-                      <div>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Overall Score</p>
-                        <span className="text-2xl font-black text-gray-900 leading-none">{v.totalScore?.toFixed(1)}</span>
-                      </div>
-                      <span className="text-[11px] font-bold text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">{v.availability}</span>
+
+                    {/* Score bar */}
+                    <div className="flex justify-between items-end mb-1">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Overall Score</p>
+                      <span className="text-lg font-black text-gray-900 leading-none">{v.totalScore?.toFixed(1)}</span>
                     </div>
                     <div className="h-1.5 bg-gray-200 rounded-full mb-3 overflow-hidden">
                       <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(v.totalScore || 0, 100)}%` }} />
                     </div>
+
+                    {/* Hours + Rating + Missions row */}
+                    <div className="grid grid-cols-3 gap-2 mb-3 bg-white border border-gray-100 rounded-lg p-2">
+                      <div className="text-center">
+                        <p className="text-[9px] font-bold text-gray-400 uppercase">Hours</p>
+                        <p className="text-sm font-black text-blue-600">{v.volunteeringHours || 0}</p>
+                      </div>
+                      <div className="text-center border-x border-gray-100">
+                        <p className="text-[9px] font-bold text-gray-400 uppercase">Rating</p>
+                        <p className="text-sm font-black text-yellow-500">★ {v.rating?.toFixed(1) || '—'}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[9px] font-bold text-gray-400 uppercase">Missions</p>
+                        <p className="text-sm font-black text-green-600">{v.completedRequests || 0}</p>
+                      </div>
+                    </div>
+
                     <div className="flex flex-wrap gap-1">
-                      {(v.skills || []).slice(0, 4).map(s => <span key={s} className="bg-white border border-gray-200 text-gray-700 text-[10px] px-2 py-0.5 rounded font-bold">{s}</span>)}
+                      {(v.skills || []).slice(0, 3).map(s => <span key={s} className="bg-white border border-gray-200 text-gray-700 text-[10px] px-2 py-0.5 rounded font-bold">{s}</span>)}
+                      {v.isAvailable ? <span className="bg-green-50 border border-green-200 text-green-700 text-[10px] px-2 py-0.5 rounded font-bold ml-auto">Available</span> : <span className="bg-red-50 border border-red-200 text-red-600 text-[10px] px-2 py-0.5 rounded font-bold ml-auto">Busy</span>}
                     </div>
                   </div>
                 ))}
