@@ -311,11 +311,10 @@ const Signup = () => {
             <p className="page-subtitle">
               Sign up as a citizen, volunteer, or NGO representative and enter the refreshed JanSeva experience without changing the backend workflows behind it.
             </p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {[
-                { label: 'Roles supported', value: '3' },
+                { label: 'Roles supported', value: '2' },
                 { label: 'Email verified', value: 'OTP' },
-                { label: 'Theme', value: 'Light SaaS' },
               ].map((item) => (
                 <div key={item.label} className="glass-card p-4">
                   <p className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--text-soft)' }}>{item.label}</p>
