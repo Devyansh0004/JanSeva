@@ -6,7 +6,8 @@ const {
   getApprovedVolunteers,
   approveRequest,
   rejectRequest,
-  assignHours
+  assignHours,
+  removeVolunteer
 } = require('../controllers/volunteer-ngo.controller');
 const { protect, authorize } = require('../middlewares/auth.middleware');
 
@@ -22,5 +23,6 @@ router.get('/approved', authorize('ngo'), getApprovedVolunteers);
 router.patch('/:id/approve', authorize('ngo'), approveRequest);
 router.patch('/:id/reject', authorize('ngo'), rejectRequest);
 router.post('/:volunteerId/assign-hours', authorize('ngo'), assignHours);
+router.delete('/:id', authorize('ngo'), removeVolunteer);
 
 module.exports = router;

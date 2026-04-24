@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
-import { Building2, Users, CheckCircle, XCircle, AlertTriangle, Plus, FileSpreadsheet, Map } from 'lucide-react'
+import { Building2, Users, CheckCircle, XCircle, AlertTriangle, Plus, FileSpreadsheet, Map, Search } from 'lucide-react'
 
 const API = 'http://localhost:5000/api'
 
@@ -12,6 +12,7 @@ export default function NGODashboard({ user }) {
   const [assignHoursInput, setAssignHoursInput] = useState({})
   const [campaigns, setCampaigns] = useState([])
   const [loading, setLoading] = useState(true)
+  const [searchVolunteer, setSearchVolunteer] = useState('')
 
   // Modal state
   const [showModal, setShowModal] = useState(false)
@@ -61,6 +62,22 @@ export default function NGODashboard({ user }) {
       }
     } catch (err) {
       console.error(err)
+    }
+  }
+
+  const handleRemoveVolunteer = async (id) => {
+    if (!window.confirm('Are you sure you want to remove this volunteer from your NGO?')) return;
+    try {
+      const res = await fetch(`${API}/volunteer-ngo/${id}`, { method: 'DELETE', headers })
+      if (res.ok) {
+        loadData()
+      } else {
+        const data = await res.json()
+        alert(data.message || 'Failed to remove volunteer')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Error removing volunteer')
     }
   }
 
@@ -163,6 +180,11 @@ export default function NGODashboard({ user }) {
     )
   }
 
+  const filteredVolunteers = approvedVolunteers.filter(vol => 
+    vol.volunteerId.name.toLowerCase().includes(searchVolunteer.toLowerCase()) ||
+    vol.volunteerId.email.toLowerCase().includes(searchVolunteer.toLowerCase())
+  )
+
   // 3. Normal Dashboard View (Approved & Profile Complete)
   return (
     <div>
@@ -220,17 +242,33 @@ export default function NGODashboard({ user }) {
               )}
             </div>
 
-            <h2 className="text-xl font-bold mt-10 mb-6 flex items-center gap-2">
-              <CheckCircle className="text-green-600" /> Approved Volunteers
-            </h2>
+            <div className="flex flex-col md:flex-row md:items-center justify-between mt-10 mb-6 gap-4">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <CheckCircle className="text-green-600" /> Approved Volunteers
+              </h2>
+              <div className="relative w-full md:w-64">
+                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input 
+                  type="text" 
+                  placeholder="Search volunteers..." 
+                  className="w-full pl-10 pr-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                  value={searchVolunteer}
+                  onChange={e => setSearchVolunteer(e.target.value)}
+                />
+              </div>
+            </div>
             
-            <div className="space-y-4">
+            <div className={`space-y-4 ${filteredVolunteers.length > 10 ? 'max-h-[600px] overflow-y-auto pr-2 custom-scrollbar' : ''}`}>
               {approvedVolunteers.length === 0 ? (
                 <div className="p-8 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed">
                   No approved volunteers yet.
                 </div>
+              ) : filteredVolunteers.length === 0 ? (
+                <div className="p-8 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed">
+                  No volunteers match your search.
+                </div>
               ) : (
-                approvedVolunteers.map(vol => (
+                filteredVolunteers.map(vol => (
                   <div key={vol._id} className="flex items-center justify-between p-4 border rounded-xl hover:shadow-sm transition">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center font-bold text-green-700">
@@ -253,6 +291,9 @@ export default function NGODashboard({ user }) {
                       />
                       <button onClick={() => handleAssignHours(vol.volunteerId._id)} className="btn-primary py-2 min-h-0 text-sm">
                         Assign
+                      </button>
+                      <button onClick={() => handleRemoveVolunteer(vol._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition" title="Remove Volunteer">
+                        <XCircle size={20} />
                       </button>
                     </div>
                   </div>

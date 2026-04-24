@@ -790,6 +790,24 @@ textarea.input-field {
   background: rgba(45, 106, 79, 0.1);
 }
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(216, 243, 220, 0.3);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(82, 183, 136, 0.3);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(82, 183, 136, 0.5);
+}
+
 .recharts-tooltip-wrapper .recharts-default-tooltip {
   border: 1px solid rgba(45, 106, 79, 0.12) !important;
   border-radius: 14px !important;
