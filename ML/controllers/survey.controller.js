@@ -122,7 +122,11 @@ const uploadSurveys = asyncHandler(async (req, res) => {
 
     try {
       records = parse(file.buffer.toString('utf-8'), {
-        columns: true, skip_empty_lines: true, trim: true
+        columns: true, 
+        skip_empty_lines: true, 
+        trim: true,
+        bom: true,
+        relax_column_count: true
       });
     } catch (e) {
       results.push({ file: file.originalname, status: 'failed', reason: `Parse error: ${e.message}` });
