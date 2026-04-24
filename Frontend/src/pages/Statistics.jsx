@@ -4,6 +4,7 @@ import { Filter, Zap } from 'lucide-react'
 
 const API = 'http://localhost:5000/api/stats'
 const COLORS = ['#40916C', '#4CC9F0', '#52B788', '#9D4EDD', '#2D6A4F', '#74C69D']
+const SKILL_OPTIONS = ['First Aid', 'Cooking', 'Driving', 'Teaching', 'Medical', 'Counselling', 'Construction', 'IT Support', 'Logistics', 'Translation']
 
 export default function Statistics() {
   const [tab, setTab] = useState('overview')
@@ -15,7 +16,7 @@ export default function Statistics() {
   const [allocation, setAllocation] = useState(null)
   const [filters, setFilters] = useState({ state: '', focusArea: '', contributionLevel: '' })
   const [filteredNGOs, setFilteredNGOs] = useState([])
-  const [skills, setSkills] = useState('')
+  const [selectedSkills, setSelectedSkills] = useState(['First Aid', 'Medical'])
   const [allocState, setAllocState] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -59,14 +60,30 @@ export default function Statistics() {
   const runAllocation = async () => {
     setLoading(true)
     const params = new URLSearchParams()
-    if (skills) params.set('skills', skills)
+    if (selectedSkills.length > 0) params.set('skills', selectedSkills.join(','))
     if (allocState) params.set('state', allocState)
     const data = await get(`${API}/volunteer-allocation?${params}`)
     setAllocation(data)
     setLoading(false)
   }
 
+  const toggleSkill = (skill) => {
+    setSelectedSkills((prev) =>
+      prev.includes(skill)
+        ? prev.filter((item) => item !== skill)
+        : [...prev, skill]
+    )
+  }
+
   const tabs = ['overview', 'charts', 'query', 'allocation', 'insights']
+  const stateChartData = stateData
+    .filter((item) => item?.state)
+    .slice(0, 12)
+    .map((item) => ({
+      ...item,
+      label: item.state,
+      value: item.totalNGOs ?? 0,
+    }))
 
   return (
     <div>
@@ -126,15 +143,21 @@ export default function Statistics() {
               </div>
               <div className="glass-card p-6">
                 <h2 className="text-xl font-extrabold tracking-[-0.04em]" style={{ color: 'var(--green-8)', fontFamily: 'Space Grotesk, Manrope, sans-serif' }}>NGOs per state</h2>
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={stateData.slice(0, 12)} margin={{ bottom: 32 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 106, 79, 0.08)" />
-                    <XAxis dataKey="_id" angle={-30} textAnchor="end" tick={{ fontSize: 10, fill: '#5F7F72' }} />
-                    <YAxis tick={{ fontSize: 11, fill: '#5F7F72' }} />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#40916C" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                {stateChartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={stateChartData} margin={{ bottom: 32 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(45, 106, 79, 0.08)" />
+                      <XAxis dataKey="label" angle={-30} textAnchor="end" tick={{ fontSize: 10, fill: '#5F7F72' }} />
+                      <YAxis tick={{ fontSize: 11, fill: '#5F7F72' }} />
+                      <Tooltip formatter={(value) => [`${value}`, 'NGOs']} />
+                      <Bar dataKey="value" fill="#40916C" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="empty-state" style={{ minHeight: 280 }}>
+                    <p>No NGO state data available right now.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -251,7 +274,39 @@ export default function Statistics() {
                 <div className="cards-grid-2">
                   <div>
                     <label className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>Skills</label>
-                    <input className="input-field" placeholder="First Aid, Teaching, Medical" value={skills} onChange={(e) => setSkills(e.target.value)} />
+                    <div className="rounded-[24px] border p-4" style={{ borderColor: 'rgba(45, 106, 79, 0.12)', background: 'rgba(255, 255, 255, 0.72)' }}>
+                      <div className="flex flex-wrap gap-2">
+                        {SKILL_OPTIONS.map((skill) => {
+                          const isSelected = selectedSkills.includes(skill)
+                          return (
+                            <button
+                              key={skill}
+                              type="button"
+                              onClick={() => toggleSkill(skill)}
+                              className="min-h-0 rounded-full px-4 py-2 text-sm font-semibold transition"
+                              style={
+                                isSelected
+                                  ? {
+                                      background: 'linear-gradient(135deg, var(--green-6), var(--green-7))',
+                                      color: '#fff',
+                                      boxShadow: '0 12px 24px rgba(64, 145, 108, 0.18)',
+                                    }
+                                  : {
+                                      background: 'rgba(216, 243, 220, 0.62)',
+                                      color: 'var(--green-8)',
+                                      border: '1px solid rgba(45, 106, 79, 0.08)',
+                                    }
+                              }
+                            >
+                              {skill}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      <p className="mt-3 text-xs" style={{ color: 'var(--text-soft)' }}>
+                        Selected: {selectedSkills.length > 0 ? selectedSkills.join(', ') : 'None'}
+                      </p>
+                    </div>
                   </div>
                   <div>
                     <label className="mb-2 block text-sm font-semibold" style={{ color: 'var(--green-8)' }}>State Filter</label>
@@ -263,11 +318,6 @@ export default function Statistics() {
                 <button onClick={runAllocation} className="btn-mustard mt-5">
                   {loading ? 'Matching...' : 'Match Volunteers to NGOs'}
                 </button>
-                {allocation && (
-                  <div className="mt-5 rounded-2xl p-4 text-xs" style={{ background: 'rgba(216, 243, 220, 0.52)', color: 'var(--text-muted)' }}>
-                    Pipeline: {allocation.mongodbPipeline} | Matches: {allocation.totalMatches}
-                  </div>
-                )}
               </div>
 
               {allocation?.matches?.length > 0 && (
@@ -305,10 +355,6 @@ export default function Statistics() {
 
           {tab === 'insights' && insights && (
             <div className="mt-6 space-y-6">
-              <div className="glass-card p-5 text-sm" style={{ color: 'var(--text-muted)' }}>
-                MongoDB features used: <strong style={{ color: 'var(--green-8)' }}>{insights.mongodbFeatures?.join(' | ')}</strong>
-              </div>
-
               <div className="cards-grid-2">
                 {insights.ngo?.byFocusArea?.length > 0 && (
                   <div className="glass-card p-6">
