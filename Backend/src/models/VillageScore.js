@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const villageScoreSchema = new mongoose.Schema({
-  villageId: { type: String, required: true, unique: true },
+  campaignId: { type: mongoose.Schema.Types.ObjectId, ref: 'Campaign', required: true },
+  villageId: { type: String, required: true },
   villageName: { type: String },
   state: { type: String },
   district: { type: String },
@@ -22,5 +23,6 @@ const villageScoreSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 villageScoreSchema.index({ overallVulnerabilityScore: -1 });
+villageScoreSchema.index({ villageId: 1, campaignId: 1 }, { unique: true });
 
 module.exports = mongoose.model('VillageScore', villageScoreSchema, 'villageScores');

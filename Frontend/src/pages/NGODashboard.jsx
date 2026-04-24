@@ -313,9 +313,7 @@ export default function NGODashboard({ user }) {
                 <Map className="text-green-600" /> Active Campaigns & Aid Missions
               </h2>
               <div className="flex items-center gap-2">
-                <Link to="/recommendations" className="btn-outline flex items-center gap-2 text-sm">
-                  <Brain size={16} /> ML Hub
-                </Link>
+
                 <div className="relative">
                   <button onClick={() => setShowTemplatesMenu(s => !s)} className="btn-outline flex items-center gap-2 text-sm">
                     <Download size={16} /> Templates <ChevronDown size={14} />

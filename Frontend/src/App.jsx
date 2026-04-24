@@ -44,7 +44,7 @@ function App() {
             <Route path="/ngo-profile" element={<NGOProfile />} />
             <Route path="/volunteer-profile" element={<VolunteerProfile />} />
             <Route path="/ngo-campaign/:id" element={<CampaignDetails />} />
-            <Route path="/recommendations" element={<MLHub />} />
+            <Route path="/ngo-campaign/:id/ml-hub" element={<MLHub />} />
           </Routes>
         </main>
         <Footer />

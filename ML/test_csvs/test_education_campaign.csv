@@ -1,0 +1,102 @@
+# Budget: 7500 | Domain: Education | Villages: 4
+village_id,village_name,household_id,surveyor_id,survey_date,school_age_children_count,enrolled_children_count,dropout_children_count,distance_to_school_km,illiterate_adults_count,total_adults_count,literate_females_count,total_females_count,highest_education_level_encoded,midday_meal_access_yn,internet_access_yn,teachers_in_school,primary_school_nearby_yn
+V_T1,Bassi,HH_1,SRV_TEST,2024-05-01,4,0,4,11,5,5,0,2,None,0,0,0,0
+V_T1,Bassi,HH_2,SRV_TEST,2024-05-01,4,1,3,23,4,6,0,1,None,0,0,0,0
+V_T1,Bassi,HH_3,SRV_TEST,2024-05-01,4,2,3,13,6,8,0,3,None,0,0,1,0
+V_T1,Bassi,HH_4,SRV_TEST,2024-05-01,4,1,2,23,5,6,0,2,None,0,0,0,0
+V_T1,Bassi,HH_5,SRV_TEST,2024-05-01,5,1,4,21,4,5,0,3,None,0,0,0,0
+V_T1,Bassi,HH_6,SRV_TEST,2024-05-01,6,1,6,15,8,8,0,3,None,0,0,1,0
+V_T1,Bassi,HH_7,SRV_TEST,2024-05-01,3,0,2,11,7,9,0,1,None,0,0,0,0
+V_T1,Bassi,HH_8,SRV_TEST,2024-05-01,5,1,4,25,8,10,0,2,None,0,0,0,0
+V_T1,Bassi,HH_9,SRV_TEST,2024-05-01,3,0,1,10,6,6,0,3,None,0,0,1,0
+V_T1,Bassi,HH_10,SRV_TEST,2024-05-01,4,1,3,25,5,6,0,2,None,0,0,0,0
+V_T1,Bassi,HH_11,SRV_TEST,2024-05-01,3,0,3,14,4,4,0,2,None,0,0,1,0
+V_T1,Bassi,HH_12,SRV_TEST,2024-05-01,6,1,4,12,8,8,0,3,None,0,0,0,0
+V_T1,Bassi,HH_13,SRV_TEST,2024-05-01,4,1,4,24,8,8,0,2,None,0,0,1,0
+V_T1,Bassi,HH_14,SRV_TEST,2024-05-01,4,0,4,23,7,7,0,2,None,0,0,0,0
+V_T1,Bassi,HH_15,SRV_TEST,2024-05-01,4,0,3,15,5,7,0,2,None,0,0,0,0
+V_T1,Bassi,HH_16,SRV_TEST,2024-05-01,3,1,3,14,5,7,0,1,None,0,0,1,0
+V_T1,Bassi,HH_17,SRV_TEST,2024-05-01,6,1,3,18,7,8,0,1,None,0,0,1,0
+V_T1,Bassi,HH_18,SRV_TEST,2024-05-01,4,2,4,24,4,4,0,2,None,0,0,1,0
+V_T1,Bassi,HH_19,SRV_TEST,2024-05-01,5,1,5,22,7,9,0,3,None,0,0,0,0
+V_T1,Bassi,HH_20,SRV_TEST,2024-05-01,5,1,5,15,4,6,0,1,None,0,0,1,0
+V_T1,Bassi,HH_21,SRV_TEST,2024-05-01,5,1,2,14,5,6,0,3,None,0,0,1,0
+V_T1,Bassi,HH_22,SRV_TEST,2024-05-01,3,0,1,25,8,10,0,1,None,0,0,0,0
+V_T1,Bassi,HH_23,SRV_TEST,2024-05-01,6,1,3,14,5,5,0,1,None,0,0,0,0
+V_T1,Bassi,HH_24,SRV_TEST,2024-05-01,6,3,6,25,7,9,0,3,None,0,0,0,0
+V_T2,Mawlynnong,HH_25,SRV_TEST,2024-05-01,4,4,2,10,3,4,1,3,Primary,0,0,3,0
+V_T2,Mawlynnong,HH_26,SRV_TEST,2024-05-01,2,1,2,5,2,5,1,2,Primary,1,0,2,0
+V_T2,Mawlynnong,HH_27,SRV_TEST,2024-05-01,2,1,2,14,2,5,1,1,Primary,1,0,3,0
+V_T2,Mawlynnong,HH_28,SRV_TEST,2024-05-01,3,2,2,9,3,6,0,2,Primary,1,0,2,0
+V_T2,Mawlynnong,HH_29,SRV_TEST,2024-05-01,4,3,1,15,5,9,0,2,Primary,0,0,2,0
+V_T2,Mawlynnong,HH_30,SRV_TEST,2024-05-01,3,2,1,10,3,4,0,3,Primary,0,0,3,0
+V_T2,Mawlynnong,HH_31,SRV_TEST,2024-05-01,3,2,1,13,5,8,0,2,Primary,0,0,2,0
+V_T2,Mawlynnong,HH_32,SRV_TEST,2024-05-01,4,3,1,15,4,8,0,1,Primary,1,0,2,0
+V_T2,Mawlynnong,HH_33,SRV_TEST,2024-05-01,4,3,2,5,5,7,1,3,Primary,1,0,1,0
+V_T2,Mawlynnong,HH_34,SRV_TEST,2024-05-01,2,1,1,15,2,6,0,3,Primary,0,0,3,0
+V_T2,Mawlynnong,HH_35,SRV_TEST,2024-05-01,5,3,3,13,4,6,1,1,Primary,0,0,3,0
+V_T2,Mawlynnong,HH_36,SRV_TEST,2024-05-01,2,1,2,5,4,8,0,1,Primary,0,0,3,0
+V_T2,Mawlynnong,HH_37,SRV_TEST,2024-05-01,5,3,2,14,4,7,0,2,Primary,1,0,1,0
+V_T2,Mawlynnong,HH_38,SRV_TEST,2024-05-01,4,3,3,12,5,6,0,2,Primary,0,0,1,0
+V_T2,Mawlynnong,HH_39,SRV_TEST,2024-05-01,5,2,3,14,5,7,1,1,Primary,0,0,2,0
+V_T2,Mawlynnong,HH_40,SRV_TEST,2024-05-01,5,5,2,10,4,7,0,3,Primary,0,0,3,0
+V_T2,Mawlynnong,HH_41,SRV_TEST,2024-05-01,3,2,2,10,2,6,1,3,Primary,0,0,3,0
+V_T2,Mawlynnong,HH_42,SRV_TEST,2024-05-01,5,5,1,8,4,8,0,1,Primary,0,0,3,0
+V_T2,Mawlynnong,HH_43,SRV_TEST,2024-05-01,2,1,1,11,5,8,1,2,Primary,1,0,3,0
+V_T2,Mawlynnong,HH_44,SRV_TEST,2024-05-01,5,2,1,10,4,8,1,3,Primary,0,0,3,0
+V_T2,Mawlynnong,HH_45,SRV_TEST,2024-05-01,2,2,2,5,5,8,0,3,Primary,1,0,1,0
+V_T2,Mawlynnong,HH_46,SRV_TEST,2024-05-01,2,1,2,9,5,9,0,1,Primary,0,0,3,0
+V_T2,Mawlynnong,HH_47,SRV_TEST,2024-05-01,3,3,2,12,5,7,1,2,Primary,0,0,1,0
+V_T2,Mawlynnong,HH_48,SRV_TEST,2024-05-01,4,4,1,12,4,6,0,2,Primary,1,0,1,0
+V_T2,Mawlynnong,HH_49,SRV_TEST,2024-05-01,3,1,2,12,5,9,0,1,Primary,1,0,2,0
+V_T2,Mawlynnong,HH_50,SRV_TEST,2024-05-01,2,1,1,10,5,9,0,2,Primary,1,0,1,0
+V_T2,Mawlynnong,HH_51,SRV_TEST,2024-05-01,2,1,1,5,5,6,0,2,Primary,1,0,3,0
+V_T2,Mawlynnong,HH_52,SRV_TEST,2024-05-01,5,2,3,9,4,5,1,3,Primary,1,0,1,0
+V_T3,Hiware Bazar,HH_53,SRV_TEST,2024-05-01,4,4,0,4,1,6,1,4,Secondary,1,0,6,1
+V_T3,Hiware Bazar,HH_54,SRV_TEST,2024-05-01,4,4,1,6,1,5,2,3,Secondary,1,0,5,1
+V_T3,Hiware Bazar,HH_55,SRV_TEST,2024-05-01,4,4,1,7,3,9,2,4,Secondary,1,0,6,1
+V_T3,Hiware Bazar,HH_56,SRV_TEST,2024-05-01,4,4,1,3,2,6,1,4,Secondary,1,1,4,1
+V_T3,Hiware Bazar,HH_57,SRV_TEST,2024-05-01,2,2,1,2,3,7,2,2,Secondary,1,1,3,1
+V_T3,Hiware Bazar,HH_58,SRV_TEST,2024-05-01,4,4,0,2,3,7,2,4,Secondary,1,1,6,1
+V_T3,Hiware Bazar,HH_59,SRV_TEST,2024-05-01,1,1,0,2,1,3,1,2,Secondary,1,0,6,1
+V_T3,Hiware Bazar,HH_60,SRV_TEST,2024-05-01,2,2,0,5,1,4,2,2,Secondary,1,1,5,1
+V_T3,Hiware Bazar,HH_61,SRV_TEST,2024-05-01,1,1,0,5,2,4,1,4,Secondary,1,0,6,1
+V_T3,Hiware Bazar,HH_62,SRV_TEST,2024-05-01,3,3,0,3,2,6,1,3,Secondary,1,0,3,1
+V_T3,Hiware Bazar,HH_63,SRV_TEST,2024-05-01,1,1,1,7,2,8,2,2,Secondary,1,0,3,1
+V_T3,Hiware Bazar,HH_64,SRV_TEST,2024-05-01,1,1,1,4,2,4,2,4,Secondary,1,0,4,1
+V_T3,Hiware Bazar,HH_65,SRV_TEST,2024-05-01,3,3,0,4,1,4,1,4,Secondary,1,0,4,1
+V_T3,Hiware Bazar,HH_66,SRV_TEST,2024-05-01,2,2,1,7,3,5,2,4,Secondary,1,1,6,1
+V_T3,Hiware Bazar,HH_67,SRV_TEST,2024-05-01,4,4,0,8,2,5,2,3,Secondary,1,0,4,1
+V_T3,Hiware Bazar,HH_68,SRV_TEST,2024-05-01,2,2,1,8,2,6,2,2,Secondary,1,0,3,1
+V_T3,Hiware Bazar,HH_69,SRV_TEST,2024-05-01,4,4,0,7,2,7,2,2,Secondary,1,0,6,1
+V_T3,Hiware Bazar,HH_70,SRV_TEST,2024-05-01,1,1,1,3,1,3,3,4,Secondary,1,1,3,1
+V_T3,Hiware Bazar,HH_71,SRV_TEST,2024-05-01,4,4,1,6,1,6,3,4,Secondary,1,0,6,1
+V_T3,Hiware Bazar,HH_72,SRV_TEST,2024-05-01,1,1,0,3,1,3,1,2,Secondary,1,1,3,1
+V_T3,Hiware Bazar,HH_73,SRV_TEST,2024-05-01,4,4,0,7,2,6,1,3,Secondary,1,0,5,1
+V_T3,Hiware Bazar,HH_74,SRV_TEST,2024-05-01,1,1,0,8,2,7,2,2,Secondary,1,0,4,1
+V_T3,Hiware Bazar,HH_75,SRV_TEST,2024-05-01,3,3,0,2,3,6,2,3,Secondary,1,1,3,1
+V_T3,Hiware Bazar,HH_76,SRV_TEST,2024-05-01,4,4,1,7,1,6,3,4,Secondary,1,0,4,1
+V_T4,Pothanikkad,HH_77,SRV_TEST,2024-05-01,1,1,0,0,0,6,3,3,Tertiary,1,1,10,1
+V_T4,Pothanikkad,HH_78,SRV_TEST,2024-05-01,1,1,0,2,0,2,3,1,Tertiary,1,1,9,1
+V_T4,Pothanikkad,HH_79,SRV_TEST,2024-05-01,2,2,0,3,0,3,2,2,Tertiary,1,1,5,1
+V_T4,Pothanikkad,HH_80,SRV_TEST,2024-05-01,1,1,0,0,0,4,2,1,Tertiary,1,1,11,1
+V_T4,Pothanikkad,HH_81,SRV_TEST,2024-05-01,2,2,0,3,0,4,1,3,Tertiary,1,1,12,1
+V_T4,Pothanikkad,HH_82,SRV_TEST,2024-05-01,1,1,0,0,0,6,2,2,Tertiary,1,1,12,1
+V_T4,Pothanikkad,HH_83,SRV_TEST,2024-05-01,2,2,0,0,0,3,1,2,Tertiary,1,1,8,1
+V_T4,Pothanikkad,HH_84,SRV_TEST,2024-05-01,2,2,0,1,0,2,2,3,Tertiary,1,1,7,1
+V_T4,Pothanikkad,HH_85,SRV_TEST,2024-05-01,2,2,0,3,0,5,2,2,Tertiary,1,1,9,1
+V_T4,Pothanikkad,HH_86,SRV_TEST,2024-05-01,2,2,0,1,0,5,1,3,Tertiary,1,1,6,1
+V_T4,Pothanikkad,HH_87,SRV_TEST,2024-05-01,3,3,0,1,0,4,2,2,Tertiary,1,1,6,1
+V_T4,Pothanikkad,HH_88,SRV_TEST,2024-05-01,3,3,0,3,0,3,1,3,Tertiary,1,1,7,1
+V_T4,Pothanikkad,HH_89,SRV_TEST,2024-05-01,1,1,0,2,0,3,2,3,Tertiary,1,1,5,1
+V_T4,Pothanikkad,HH_90,SRV_TEST,2024-05-01,3,3,0,2,0,5,3,3,Tertiary,1,1,10,1
+V_T4,Pothanikkad,HH_91,SRV_TEST,2024-05-01,2,2,0,3,0,3,2,1,Tertiary,1,1,5,1
+V_T4,Pothanikkad,HH_92,SRV_TEST,2024-05-01,1,1,0,2,0,5,2,2,Tertiary,1,1,5,1
+V_T4,Pothanikkad,HH_93,SRV_TEST,2024-05-01,1,1,0,1,0,2,3,2,Tertiary,1,1,6,1
+V_T4,Pothanikkad,HH_94,SRV_TEST,2024-05-01,2,2,0,1,0,5,1,3,Tertiary,1,1,6,1
+V_T4,Pothanikkad,HH_95,SRV_TEST,2024-05-01,2,2,0,2,0,3,2,3,Tertiary,1,1,8,1
+V_T4,Pothanikkad,HH_96,SRV_TEST,2024-05-01,3,3,0,1,0,3,2,3,Tertiary,1,1,11,1
+V_T4,Pothanikkad,HH_97,SRV_TEST,2024-05-01,3,3,0,3,0,3,1,3,Tertiary,1,1,6,1
+V_T4,Pothanikkad,HH_98,SRV_TEST,2024-05-01,3,3,0,3,0,2,1,3,Tertiary,1,1,11,1
+V_T4,Pothanikkad,HH_99,SRV_TEST,2024-05-01,3,3,0,1,0,4,3,2,Tertiary,1,1,6,1
+V_T4,Pothanikkad,HH_100,SRV_TEST,2024-05-01,1,1,0,0,0,6,3,3,Tertiary,1,1,9,1

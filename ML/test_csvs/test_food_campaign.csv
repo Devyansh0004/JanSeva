@@ -1,0 +1,104 @@
+# Budget: 7500 | Domain: Food | Villages: 4
+village_id,village_name,household_id,surveyor_id,survey_date,monthly_income,meals_per_day,food_source_type,food_insecure_months_per_year,child_malnutrition_yn,household_size,ration_card_yn,clean_water_access_yn,crop_failure_last_3yr,food_aid_receipt_yn,pds_access_yn,caloric_intake_score
+V_T1,Bassi,HH_1,SRV_TEST,2024-05-01,1525,1,Aid,9,1,8,0,0,1,0,0,25
+V_T1,Bassi,HH_2,SRV_TEST,2024-05-01,1605,2,Aid,7,1,10,0,0,1,0,0,21
+V_T1,Bassi,HH_3,SRV_TEST,2024-05-01,1375,1,Aid,9,1,9,0,0,1,0,0,14
+V_T1,Bassi,HH_4,SRV_TEST,2024-05-01,2822,2,Aid,5,1,10,0,0,1,0,0,14
+V_T1,Bassi,HH_5,SRV_TEST,2024-05-01,2162,1,Aid,6,1,5,0,0,1,0,0,13
+V_T1,Bassi,HH_6,SRV_TEST,2024-05-01,1675,2,Aid,5,1,6,0,0,1,0,0,27
+V_T1,Bassi,HH_7,SRV_TEST,2024-05-01,2996,2,Market,5,1,7,0,0,1,0,0,15
+V_T1,Bassi,HH_8,SRV_TEST,2024-05-01,1858,1,Market,5,1,8,0,0,1,0,0,17
+V_T1,Bassi,HH_9,SRV_TEST,2024-05-01,2725,2,Aid,9,1,5,0,0,1,0,0,17
+V_T1,Bassi,HH_10,SRV_TEST,2024-05-01,1429,2,Aid,9,1,7,0,0,1,0,0,13
+V_T1,Bassi,HH_11,SRV_TEST,2024-05-01,1911,1,Aid,5,1,5,0,0,1,0,0,27
+V_T1,Bassi,HH_12,SRV_TEST,2024-05-01,2733,1,Market,8,1,10,0,0,1,0,0,26
+V_T1,Bassi,HH_13,SRV_TEST,2024-05-01,2494,1,Market,8,1,10,0,0,1,0,0,20
+V_T1,Bassi,HH_14,SRV_TEST,2024-05-01,2567,2,Market,8,1,7,0,0,1,0,0,21
+V_T1,Bassi,HH_15,SRV_TEST,2024-05-01,2430,1,Market,5,1,7,0,0,1,0,0,23
+V_T1,Bassi,HH_16,SRV_TEST,2024-05-01,1407,2,Market,8,1,6,0,0,1,0,0,10
+V_T1,Bassi,HH_17,SRV_TEST,2024-05-01,1102,1,Market,9,1,8,0,0,1,0,0,25
+V_T1,Bassi,HH_18,SRV_TEST,2024-05-01,2950,2,Aid,5,1,8,0,0,1,0,0,18
+V_T1,Bassi,HH_19,SRV_TEST,2024-05-01,1171,1,Aid,9,1,7,0,0,1,0,0,20
+V_T1,Bassi,HH_20,SRV_TEST,2024-05-01,2448,2,Aid,8,1,9,0,0,1,0,0,24
+V_T1,Bassi,HH_21,SRV_TEST,2024-05-01,1487,2,Market,9,1,8,0,0,1,0,0,15
+V_T1,Bassi,HH_22,SRV_TEST,2024-05-01,2277,2,Market,5,1,5,0,0,1,0,0,25
+V_T1,Bassi,HH_23,SRV_TEST,2024-05-01,1067,1,Market,6,1,8,0,0,1,0,0,24
+V_T1,Bassi,HH_24,SRV_TEST,2024-05-01,2593,1,Aid,8,1,5,0,0,1,0,0,24
+V_T1,Bassi,HH_25,SRV_TEST,2024-05-01,1150,2,Aid,9,1,5,0,0,1,0,0,25
+V_T2,Mawlynnong,HH_26,SRV_TEST,2024-05-01,4949,2,Self-grown,5,0,5,0,0,1,0,1,44
+V_T2,Mawlynnong,HH_27,SRV_TEST,2024-05-01,4263,2,Market,6,1,7,0,0,1,0,0,39
+V_T2,Mawlynnong,HH_28,SRV_TEST,2024-05-01,4928,2,Market,5,1,5,0,0,1,0,1,43
+V_T2,Mawlynnong,HH_29,SRV_TEST,2024-05-01,4375,2,Market,4,1,4,0,0,1,0,1,28
+V_T2,Mawlynnong,HH_30,SRV_TEST,2024-05-01,3716,2,Market,6,0,7,1,0,1,0,1,30
+V_T2,Mawlynnong,HH_31,SRV_TEST,2024-05-01,4450,2,Self-grown,6,0,5,0,0,1,0,0,34
+V_T2,Mawlynnong,HH_32,SRV_TEST,2024-05-01,3649,2,Self-grown,3,1,7,1,0,1,0,0,33
+V_T2,Mawlynnong,HH_33,SRV_TEST,2024-05-01,4738,2,Market,4,1,8,0,0,1,0,0,32
+V_T2,Mawlynnong,HH_34,SRV_TEST,2024-05-01,3763,2,Self-grown,3,0,5,0,0,1,0,0,39
+V_T2,Mawlynnong,HH_35,SRV_TEST,2024-05-01,4952,2,Self-grown,6,1,5,0,0,1,0,0,28
+V_T2,Mawlynnong,HH_36,SRV_TEST,2024-05-01,3609,2,Self-grown,4,1,5,1,0,1,0,1,44
+V_T2,Mawlynnong,HH_37,SRV_TEST,2024-05-01,3650,2,Market,3,1,5,1,0,1,0,0,41
+V_T2,Mawlynnong,HH_38,SRV_TEST,2024-05-01,3603,2,Market,4,1,7,1,0,1,0,0,30
+V_T2,Mawlynnong,HH_39,SRV_TEST,2024-05-01,4991,2,Market,6,1,6,0,0,1,0,1,36
+V_T2,Mawlynnong,HH_40,SRV_TEST,2024-05-01,2945,2,Self-grown,6,0,6,1,0,1,0,1,37
+V_T2,Mawlynnong,HH_41,SRV_TEST,2024-05-01,4651,2,Self-grown,6,1,6,1,0,1,0,0,39
+V_T2,Mawlynnong,HH_42,SRV_TEST,2024-05-01,3371,2,Market,4,0,6,1,0,1,0,0,41
+V_T2,Mawlynnong,HH_43,SRV_TEST,2024-05-01,4372,2,Self-grown,6,1,8,1,0,1,0,0,30
+V_T2,Mawlynnong,HH_44,SRV_TEST,2024-05-01,4273,2,Market,4,1,5,0,0,1,0,1,35
+V_T2,Mawlynnong,HH_45,SRV_TEST,2024-05-01,2831,2,Self-grown,3,1,7,0,0,1,0,0,32
+V_T2,Mawlynnong,HH_46,SRV_TEST,2024-05-01,3987,2,Self-grown,3,1,8,0,0,1,0,0,39
+V_T2,Mawlynnong,HH_47,SRV_TEST,2024-05-01,3696,2,Self-grown,3,1,4,1,0,1,0,1,44
+V_T2,Mawlynnong,HH_48,SRV_TEST,2024-05-01,2716,2,Self-grown,5,1,6,1,0,1,0,1,37
+V_T2,Mawlynnong,HH_49,SRV_TEST,2024-05-01,3849,2,Self-grown,5,1,7,0,0,1,0,0,40
+V_T3,Hiware Bazar,HH_50,SRV_TEST,2024-05-01,5584,3,Market,1,0,5,1,1,0,0,1,58
+V_T3,Hiware Bazar,HH_51,SRV_TEST,2024-05-01,4984,3,Self-grown,1,0,4,1,1,0,0,1,49
+V_T3,Hiware Bazar,HH_52,SRV_TEST,2024-05-01,6966,3,Self-grown,1,0,3,1,1,0,0,1,53
+V_T3,Hiware Bazar,HH_53,SRV_TEST,2024-05-01,4868,3,Market,1,0,4,1,1,0,0,1,55
+V_T3,Hiware Bazar,HH_54,SRV_TEST,2024-05-01,7282,3,Self-grown,2,0,6,1,1,0,0,1,54
+V_T3,Hiware Bazar,HH_55,SRV_TEST,2024-05-01,6176,3,Self-grown,3,0,6,1,1,0,0,1,44
+V_T3,Hiware Bazar,HH_56,SRV_TEST,2024-05-01,6631,3,Self-grown,2,0,5,1,1,0,0,1,58
+V_T3,Hiware Bazar,HH_57,SRV_TEST,2024-05-01,5635,3,Self-grown,1,0,5,1,1,0,0,1,43
+V_T3,Hiware Bazar,HH_58,SRV_TEST,2024-05-01,4230,3,Market,3,0,6,1,1,0,0,1,42
+V_T3,Hiware Bazar,HH_59,SRV_TEST,2024-05-01,7754,3,Market,1,0,3,1,1,0,0,1,50
+V_T3,Hiware Bazar,HH_60,SRV_TEST,2024-05-01,6438,3,Market,3,0,6,1,1,0,0,1,50
+V_T3,Hiware Bazar,HH_61,SRV_TEST,2024-05-01,5960,3,Market,3,0,5,1,1,0,0,1,58
+V_T3,Hiware Bazar,HH_62,SRV_TEST,2024-05-01,7404,3,Self-grown,2,0,6,1,1,0,0,1,41
+V_T3,Hiware Bazar,HH_63,SRV_TEST,2024-05-01,7041,3,Market,2,0,5,1,1,0,0,1,43
+V_T3,Hiware Bazar,HH_64,SRV_TEST,2024-05-01,5398,3,Self-grown,2,0,6,1,1,0,0,1,60
+V_T3,Hiware Bazar,HH_65,SRV_TEST,2024-05-01,4623,3,Self-grown,2,0,5,1,1,0,0,1,60
+V_T3,Hiware Bazar,HH_66,SRV_TEST,2024-05-01,5178,3,Market,1,0,6,1,1,0,0,1,48
+V_T3,Hiware Bazar,HH_67,SRV_TEST,2024-05-01,5055,3,Market,2,0,5,1,1,0,0,1,56
+V_T3,Hiware Bazar,HH_68,SRV_TEST,2024-05-01,4462,3,Self-grown,1,0,6,1,1,0,0,1,54
+V_T3,Hiware Bazar,HH_69,SRV_TEST,2024-05-01,6888,3,Self-grown,3,0,5,1,1,0,0,1,45
+V_T3,Hiware Bazar,HH_70,SRV_TEST,2024-05-01,4573,3,Self-grown,1,0,3,1,1,0,0,1,53
+V_T3,Hiware Bazar,HH_71,SRV_TEST,2024-05-01,6195,3,Self-grown,3,0,4,1,1,0,0,1,42
+V_T3,Hiware Bazar,HH_72,SRV_TEST,2024-05-01,4514,3,Market,3,0,4,1,1,0,0,1,52
+V_T3,Hiware Bazar,HH_73,SRV_TEST,2024-05-01,4755,3,Self-grown,3,0,6,1,1,0,0,1,58
+V_T3,Hiware Bazar,HH_74,SRV_TEST,2024-05-01,4318,3,Self-grown,1,0,4,1,1,0,0,1,57
+V_T3,Hiware Bazar,HH_75,SRV_TEST,2024-05-01,4591,3,Market,1,0,3,1,1,0,0,1,50
+V_T3,Hiware Bazar,HH_76,SRV_TEST,2024-05-01,6399,3,Self-grown,2,0,6,1,1,0,0,1,60
+V_T4,Pothanikkad,HH_77,SRV_TEST,2024-05-01,10804,3,Market,0,0,5,1,1,0,0,1,65
+V_T4,Pothanikkad,HH_78,SRV_TEST,2024-05-01,18683,3,Market,0,0,4,1,1,0,0,1,71
+V_T4,Pothanikkad,HH_79,SRV_TEST,2024-05-01,9920,4,Market,0,0,2,1,1,0,0,1,78
+V_T4,Pothanikkad,HH_80,SRV_TEST,2024-05-01,17702,3,Market,0,0,4,1,1,0,0,1,86
+V_T4,Pothanikkad,HH_81,SRV_TEST,2024-05-01,16295,4,Market,0,0,2,1,1,0,0,1,75
+V_T4,Pothanikkad,HH_82,SRV_TEST,2024-05-01,13305,4,Market,0,0,4,1,1,0,0,1,63
+V_T4,Pothanikkad,HH_83,SRV_TEST,2024-05-01,18930,3,Market,0,0,5,1,1,0,0,1,64
+V_T4,Pothanikkad,HH_84,SRV_TEST,2024-05-01,13319,3,Market,0,0,5,1,1,0,0,1,78
+V_T4,Pothanikkad,HH_85,SRV_TEST,2024-05-01,16007,3,Market,0,0,3,1,1,0,0,1,78
+V_T4,Pothanikkad,HH_86,SRV_TEST,2024-05-01,10132,4,Market,0,0,3,1,1,0,0,1,83
+V_T4,Pothanikkad,HH_87,SRV_TEST,2024-05-01,18202,3,Market,0,0,3,1,1,0,0,1,65
+V_T4,Pothanikkad,HH_88,SRV_TEST,2024-05-01,8609,3,Market,0,0,5,1,1,0,0,1,80
+V_T4,Pothanikkad,HH_89,SRV_TEST,2024-05-01,15388,4,Market,0,0,2,1,1,0,0,1,62
+V_T4,Pothanikkad,HH_90,SRV_TEST,2024-05-01,15233,4,Market,0,0,3,1,1,0,0,1,68
+V_T4,Pothanikkad,HH_91,SRV_TEST,2024-05-01,9242,4,Market,0,0,3,1,1,0,0,1,68
+V_T4,Pothanikkad,HH_92,SRV_TEST,2024-05-01,14637,3,Market,0,0,3,1,1,0,0,1,90
+V_T4,Pothanikkad,HH_93,SRV_TEST,2024-05-01,9338,4,Market,0,0,2,1,1,0,0,1,90
+V_T4,Pothanikkad,HH_94,SRV_TEST,2024-05-01,17421,3,Market,0,0,5,1,1,0,0,1,64
+V_T4,Pothanikkad,HH_95,SRV_TEST,2024-05-01,14957,3,Market,0,0,5,1,1,0,0,1,81
+V_T4,Pothanikkad,HH_96,SRV_TEST,2024-05-01,10544,4,Market,0,0,3,1,1,0,0,1,62
+V_T4,Pothanikkad,HH_97,SRV_TEST,2024-05-01,18610,3,Market,0,0,3,1,1,0,0,1,69
+V_T4,Pothanikkad,HH_98,SRV_TEST,2024-05-01,11291,4,Market,0,0,5,1,1,0,0,1,62
+V_T4,Pothanikkad,HH_99,SRV_TEST,2024-05-01,15267,3,Market,0,0,4,1,1,0,0,1,82
+V_T4,Pothanikkad,HH_100,SRV_TEST,2024-05-01,11432,4,Market,0,0,2,1,1,0,0,1,79
+V_T4,Pothanikkad,HH_101,SRV_TEST,2024-05-01,19958,4,Market,0,0,3,1,1,0,0,1,83
+V_T4,Pothanikkad,HH_102,SRV_TEST,2024-05-01,11450,3,Market,0,0,3,1,1,0,0,1,67

@@ -1,0 +1,107 @@
+village_id,village_name,household_id,surveyor_id,survey_date,domain_indicator_1,domain_indicator_2
+SYN_5,Synthetic Village 5,HH_1,SRV_01,2024-05-01,5,3
+SYN_5,Synthetic Village 5,HH_2,SRV_01,2024-05-01,8,2
+SYN_5,Synthetic Village 5,HH_3,SRV_01,2024-05-01,3,7
+SYN_5,Synthetic Village 5,HH_4,SRV_01,2024-05-01,7,3
+SYN_5,Synthetic Village 5,HH_5,SRV_01,2024-05-01,8,0
+SYN_5,Synthetic Village 5,HH_6,SRV_01,2024-05-01,7,0
+SYN_5,Synthetic Village 5,HH_7,SRV_01,2024-05-01,0,9
+SYN_5,Synthetic Village 5,HH_8,SRV_01,2024-05-01,4,2
+SYN_5,Synthetic Village 5,HH_9,SRV_01,2024-05-01,5,5
+SYN_5,Synthetic Village 5,HH_10,SRV_01,2024-05-01,4,5
+SYN_5,Synthetic Village 5,HH_11,SRV_01,2024-05-01,1,8
+SYN_5,Synthetic Village 5,HH_12,SRV_01,2024-05-01,9,3
+SYN_5,Synthetic Village 5,HH_13,SRV_01,2024-05-01,4,0
+SYN_5,Synthetic Village 5,HH_14,SRV_01,2024-05-01,1,6
+SYN_5,Synthetic Village 5,HH_15,SRV_01,2024-05-01,8,10
+SYN_5,Synthetic Village 5,HH_16,SRV_01,2024-05-01,10,4
+SYN_5,Synthetic Village 5,HH_17,SRV_01,2024-05-01,8,4
+SYN_5,Synthetic Village 5,HH_18,SRV_01,2024-05-01,1,4
+SYN_5,Synthetic Village 5,HH_19,SRV_01,2024-05-01,2,3
+SYN_5,Synthetic Village 5,HH_20,SRV_01,2024-05-01,1,10
+SYN_5,Synthetic Village 5,HH_21,SRV_01,2024-05-01,3,5
+SYN_5,Synthetic Village 5,HH_22,SRV_01,2024-05-01,9,9
+SYN_5,Synthetic Village 5,HH_23,SRV_01,2024-05-01,5,7
+SYN_5,Synthetic Village 5,HH_24,SRV_01,2024-05-01,8,10
+SYN_5,Synthetic Village 5,HH_25,SRV_01,2024-05-01,4,4
+SYN_5,Synthetic Village 5,HH_26,SRV_01,2024-05-01,10,4
+SYN_5,Synthetic Village 5,HH_27,SRV_01,2024-05-01,10,9
+SYN_5,Synthetic Village 5,HH_28,SRV_01,2024-05-01,0,3
+SYN_5,Synthetic Village 5,HH_29,SRV_01,2024-05-01,8,6
+V_008,Mawlynnong,HH_30,SRV_01,2024-05-01,8,0
+V_008,Mawlynnong,HH_31,SRV_01,2024-05-01,4,1
+V_008,Mawlynnong,HH_32,SRV_01,2024-05-01,8,2
+V_008,Mawlynnong,HH_33,SRV_01,2024-05-01,8,1
+V_008,Mawlynnong,HH_34,SRV_01,2024-05-01,10,1
+V_008,Mawlynnong,HH_35,SRV_01,2024-05-01,4,6
+V_008,Mawlynnong,HH_36,SRV_01,2024-05-01,3,9
+V_008,Mawlynnong,HH_37,SRV_01,2024-05-01,6,7
+V_008,Mawlynnong,HH_38,SRV_01,2024-05-01,3,7
+V_008,Mawlynnong,HH_39,SRV_01,2024-05-01,3,8
+V_008,Mawlynnong,HH_40,SRV_01,2024-05-01,7,8
+V_008,Mawlynnong,HH_41,SRV_01,2024-05-01,10,6
+V_008,Mawlynnong,HH_42,SRV_01,2024-05-01,3,1
+V_008,Mawlynnong,HH_43,SRV_01,2024-05-01,2,6
+V_008,Mawlynnong,HH_44,SRV_01,2024-05-01,2,1
+V_008,Mawlynnong,HH_45,SRV_01,2024-05-01,5,1
+V_008,Mawlynnong,HH_46,SRV_01,2024-05-01,5,6
+V_008,Mawlynnong,HH_47,SRV_01,2024-05-01,8,10
+V_008,Mawlynnong,HH_48,SRV_01,2024-05-01,7,8
+V_008,Mawlynnong,HH_49,SRV_01,2024-05-01,9,10
+V_008,Mawlynnong,HH_50,SRV_01,2024-05-01,8,0
+V_008,Mawlynnong,HH_51,SRV_01,2024-05-01,3,8
+V_008,Mawlynnong,HH_52,SRV_01,2024-05-01,1,0
+V_008,Mawlynnong,HH_53,SRV_01,2024-05-01,9,5
+V_008,Mawlynnong,HH_54,SRV_01,2024-05-01,10,6
+V_007,Koraput,HH_55,SRV_01,2024-05-01,2,9
+V_007,Koraput,HH_56,SRV_01,2024-05-01,9,4
+V_007,Koraput,HH_57,SRV_01,2024-05-01,2,1
+V_007,Koraput,HH_58,SRV_01,2024-05-01,10,8
+V_007,Koraput,HH_59,SRV_01,2024-05-01,0,8
+V_007,Koraput,HH_60,SRV_01,2024-05-01,0,9
+V_007,Koraput,HH_61,SRV_01,2024-05-01,0,9
+V_007,Koraput,HH_62,SRV_01,2024-05-01,5,10
+V_007,Koraput,HH_63,SRV_01,2024-05-01,6,1
+V_007,Koraput,HH_64,SRV_01,2024-05-01,1,8
+V_007,Koraput,HH_65,SRV_01,2024-05-01,0,0
+V_007,Koraput,HH_66,SRV_01,2024-05-01,2,7
+V_007,Koraput,HH_67,SRV_01,2024-05-01,6,4
+V_007,Koraput,HH_68,SRV_01,2024-05-01,3,6
+V_007,Koraput,HH_69,SRV_01,2024-05-01,7,7
+V_007,Koraput,HH_70,SRV_01,2024-05-01,8,7
+V_007,Koraput,HH_71,SRV_01,2024-05-01,7,2
+V_007,Koraput,HH_72,SRV_01,2024-05-01,9,9
+V_007,Koraput,HH_73,SRV_01,2024-05-01,6,2
+V_007,Koraput,HH_74,SRV_01,2024-05-01,1,9
+V_007,Koraput,HH_75,SRV_01,2024-05-01,0,8
+V_007,Koraput,HH_76,SRV_01,2024-05-01,9,3
+V_007,Koraput,HH_77,SRV_01,2024-05-01,2,4
+V_007,Koraput,HH_78,SRV_01,2024-05-01,1,4
+V_007,Koraput,HH_79,SRV_01,2024-05-01,6,4
+V_007,Koraput,HH_80,SRV_01,2024-05-01,1,8
+SYN_6,Synthetic Village 6,HH_81,SRV_01,2024-05-01,4,5
+SYN_6,Synthetic Village 6,HH_82,SRV_01,2024-05-01,8,6
+SYN_6,Synthetic Village 6,HH_83,SRV_01,2024-05-01,5,1
+SYN_6,Synthetic Village 6,HH_84,SRV_01,2024-05-01,10,1
+SYN_6,Synthetic Village 6,HH_85,SRV_01,2024-05-01,2,3
+SYN_6,Synthetic Village 6,HH_86,SRV_01,2024-05-01,5,0
+SYN_6,Synthetic Village 6,HH_87,SRV_01,2024-05-01,3,10
+SYN_6,Synthetic Village 6,HH_88,SRV_01,2024-05-01,9,1
+SYN_6,Synthetic Village 6,HH_89,SRV_01,2024-05-01,0,1
+SYN_6,Synthetic Village 6,HH_90,SRV_01,2024-05-01,4,5
+SYN_6,Synthetic Village 6,HH_91,SRV_01,2024-05-01,9,2
+SYN_6,Synthetic Village 6,HH_92,SRV_01,2024-05-01,4,10
+SYN_6,Synthetic Village 6,HH_93,SRV_01,2024-05-01,7,7
+SYN_6,Synthetic Village 6,HH_94,SRV_01,2024-05-01,2,3
+SYN_6,Synthetic Village 6,HH_95,SRV_01,2024-05-01,3,5
+SYN_6,Synthetic Village 6,HH_96,SRV_01,2024-05-01,2,2
+SYN_6,Synthetic Village 6,HH_97,SRV_01,2024-05-01,1,7
+SYN_6,Synthetic Village 6,HH_98,SRV_01,2024-05-01,8,3
+SYN_6,Synthetic Village 6,HH_99,SRV_01,2024-05-01,4,9
+SYN_6,Synthetic Village 6,HH_100,SRV_01,2024-05-01,2,5
+SYN_6,Synthetic Village 6,HH_101,SRV_01,2024-05-01,7,10
+SYN_6,Synthetic Village 6,HH_102,SRV_01,2024-05-01,7,7
+SYN_6,Synthetic Village 6,HH_103,SRV_01,2024-05-01,8,1
+SYN_6,Synthetic Village 6,HH_104,SRV_01,2024-05-01,10,0
+SYN_6,Synthetic Village 6,HH_105,SRV_01,2024-05-01,8,10
+SYN_6,Synthetic Village 6,HH_106,SRV_01,2024-05-01,9,6

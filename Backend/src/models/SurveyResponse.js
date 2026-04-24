@@ -13,6 +13,5 @@ const surveyResponseSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 surveyResponseSchema.index({ villageId: 1, surveyType: 1 });
-surveyResponseSchema.index({ sessionId: 1 });
 
 module.exports = mongoose.model('SurveyResponse', surveyResponseSchema, 'surveyresponses');

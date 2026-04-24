@@ -25,6 +25,7 @@ router.get('/ml/village/:id/detail', mlController.getVillageDetail);
 router.get('/ml/volunteers/ranked', mlController.getRankedVolunteers);
 router.get('/ml/smart-match/:villageId', mlController.getSmartMatch);
 router.get('/ml/deployment-plan', mlController.getDeploymentPlan);
+router.post('/ml/campaign/:id/run-matching', mlController.runMatching);
 router.post('/ml/recompute', protect, mlController.recompute);
 
 // ─── Survey Routes ────────────────────────────────────────────────────────────

@@ -17,50 +17,69 @@ const sendSuccess = (res, code, msg, data) => res.status(code).json({ success: t
 // ─── GET /api/ml/stats ────────────────────────────────────────────────────────
 const getStats = asyncHandler(async (req, res) => {
   const db = mongoose.connection.db;
+  const { campaignId } = req.query;
 
-  const [totalVillages, criticalVillages, totalVolunteers, avgScoreResult] = await Promise.all([
-    db.collection('villageScores').countDocuments(),
-    db.collection('villageScores').countDocuments({ vulnerabilityClass: 'CRITICAL' }),
-    db.collection('volunteers').countDocuments(),
-    db.collection('volunteerscores').aggregate([
-      { $group: { _id: null, avg: { $avg: '$totalScore' } } }
+  let villageQuery = {};
+  if (campaignId) {
+    villageQuery.campaignId = new mongoose.Types.ObjectId(campaignId);
+  }
+
+  const [totalVillages, criticalVillages, sectorAvgResult] = await Promise.all([
+    db.collection('villageScores').countDocuments(villageQuery),
+    db.collection('villageScores').countDocuments({ ...villageQuery, vulnerabilityClass: 'CRITICAL' }),
+    db.collection('villageScores').aggregate([
+      { $match: villageQuery },
+      {
+        $group: {
+          _id: null,
+          avgHealth: { $avg: '$healthScore' },
+          avgFood: { $avg: '$foodScore' },
+          avgEducation: { $avg: '$educationScore' },
+          avgShelter: { $avg: '$shelterScore' }
+        }
+      }
     ]).toArray()
   ]);
 
-  const avgScore = avgScoreResult[0]?.avg || 0;
-
-  // Domain sector averages from villageScores
-  const sectorAvg = await db.collection('villageScores').aggregate([
-    {
-      $group: {
-        _id: null,
-        avgHealth: { $avg: '$healthScore' },
-        avgFood: { $avg: '$foodScore' },
-        avgEducation: { $avg: '$educationScore' },
-        avgShelter: { $avg: '$shelterScore' }
-      }
+  let totalVolunteers = 0;
+  let avgScore = 0;
+  
+  if (campaignId) {
+    // Registered volunteers for this campaign
+    const regs = await db.collection('campaignregistrations').find({ campaignId: new mongoose.Types.ObjectId(campaignId) }).toArray();
+    totalVolunteers = regs.length;
+    const volIds = regs.map(r => r.volunteerId);
+    if (volIds.length > 0) {
+      const avgScoreResult = await db.collection('volunteerscores').aggregate([
+        { $match: { volunteerId: { $in: volIds } } },
+        { $group: { _id: null, avg: { $avg: '$totalScore' } } }
+      ]).toArray();
+      avgScore = avgScoreResult[0]?.avg || 0;
     }
-  ]).toArray();
-
-  const tierBreakdown = await db.collection('volunteerscores').aggregate([
-    { $group: { _id: '$tier', count: { $sum: 1 } } },
-    { $sort: { _id: 1 } }
-  ]).toArray();
+  } else {
+    totalVolunteers = await db.collection('volunteers').countDocuments();
+    const avgScoreResult = await db.collection('volunteerscores').aggregate([
+      { $group: { _id: null, avg: { $avg: '$totalScore' } } }
+    ]).toArray();
+    avgScore = avgScoreResult[0]?.avg || 0;
+  }
 
   sendSuccess(res, 200, 'ML stats fetched', {
     totalVillages,
     criticalVillages,
     totalVolunteers,
     avgVolunteerScore: Math.round(avgScore * 10) / 10,
-    sectorAverages: sectorAvg[0] || {},
-    tierBreakdown
+    sectorAverages: sectorAvgResult[0] || {},
+    tierBreakdown: [] // Removing tier breakdown from basic stats since it's heavy and rarely used here
   });
 });
+
+
 
 // ─── GET /api/ml/village-rankings ─────────────────────────────────────────────
 const getVillageRankings = asyncHandler(async (req, res) => {
   const db = mongoose.connection.db;
-  const { domain, limit = 50 } = req.query;
+  const { domain, limit = 50, campaignId } = req.query;
 
   const sortField = domain === 'health' ? 'healthScore'
     : domain === 'food' ? 'foodScore'
@@ -68,8 +87,12 @@ const getVillageRankings = asyncHandler(async (req, res) => {
     : domain === 'shelter' ? 'shelterScore'
     : 'overallVulnerabilityScore';
 
+  let matchQuery = {};
+  if (domain) matchQuery.primaryDomain = domain;
+  if (campaignId) matchQuery.campaignId = new mongoose.Types.ObjectId(campaignId);
+
   const villages = await db.collection('villageScores').aggregate([
-    { $match: {} },
+    { $match: matchQuery },
     { $sort: { [sortField]: -1 } },
     { $limit: parseInt(limit) },
     {
@@ -77,7 +100,7 @@ const getVillageRankings = asyncHandler(async (req, res) => {
         villageId: 1, villageName: 1, state: 1, district: 1,
         overallVulnerabilityScore: 1, vulnerabilityClass: 1, primaryDomain: 1,
         healthScore: 1, foodScore: 1, educationScore: 1, shelterScore: 1,
-        domainsAvailable: 1, population: 1
+        domainsAvailable: 1, population: 1, campaignId: 1
       }
     }
   ]).toArray();
@@ -119,11 +142,21 @@ const getVillageDetail = asyncHandler(async (req, res) => {
 // ─── GET /api/ml/volunteers/ranked ────────────────────────────────────────────
 const getRankedVolunteers = asyncHandler(async (req, res) => {
   const db = mongoose.connection.db;
-  const { tier, limit = 100 } = req.query;
+  const { tier, limit = 100, campaignId } = req.query;
 
   const matchStage = tier ? { 'scoreData.tier': tier } : {};
 
-  const volunteers = await db.collection('volunteers').aggregate([
+  let volunteerIds = null;
+  if (campaignId) {
+    const regs = await db.collection('campaignregistrations').find({ campaignId: new mongoose.Types.ObjectId(campaignId) }).toArray();
+    volunteerIds = regs.map(r => r.volunteerId);
+    if (volunteerIds.length === 0) return sendSuccess(res, 200, 'No volunteers', []);
+  }
+
+  const pipeline = [];
+  if (volunteerIds) pipeline.push({ $match: { _id: { $in: volunteerIds } } });
+
+  pipeline.push(
     {
       $lookup: {
         from: 'volunteerscores',
@@ -165,7 +198,9 @@ const getRankedVolunteers = asyncHandler(async (req, res) => {
         reliabilityScore: { $ifNull: ['$scoreData.reliabilityScore', 0] }
       }
     }
-  ]).toArray();
+  );
+
+  const volunteers = await db.collection('volunteers').aggregate(pipeline).toArray();
 
   sendSuccess(res, 200, 'Ranked volunteers fetched', volunteers);
 });
@@ -222,36 +257,43 @@ const getSmartMatch = asyncHandler(async (req, res) => {
 // ─── GET /api/ml/deployment-plan ──────────────────────────────────────────────
 const getDeploymentPlan = asyncHandler(async (req, res) => {
   const db = mongoose.connection.db;
-  const pipeline = buildDeploymentPipeline();
-  const villages = await db.collection('villageScores').aggregate(pipeline).toArray();
+  const { campaignId } = req.query;
 
-  // For each village, fetch top 3 matched volunteers
-  const deploymentPlan = await Promise.all(villages.map(async (village) => {
-    const matchPipeline = buildSmartMatchPipeline(village.primaryDomain, village.state, village.volunteerSlots);
-    const [matchResult] = await db.collection('volunteers').aggregate(matchPipeline).toArray();
+  // Since we have Assignments now, the deployment plan is just fetching assignments!
+  let query = {};
+  if (campaignId) query.campaignId = new mongoose.Types.ObjectId(campaignId);
 
-    const seen = new Set();
-    const vols = [];
-    for (const v of [...(matchResult?.tierA || []), ...(matchResult?.tierBC || []), ...(matchResult?.all || [])]) {
-      if (!seen.has(v._id.toString())) { seen.add(v._id.toString()); vols.push(v); }
-      if (vols.length >= village.volunteerSlots) break;
-    }
+  const assignments = await db.collection('assignments').find(query).toArray();
+  
+  if (assignments.length === 0) return sendSuccess(res, 200, 'Deployment plan fetched', []);
 
-    const userIds = vols.map(v => v.userId);
-    const users = await db.collection('users').find({ _id: { $in: userIds } }).project({ name: 1 }).toArray();
-    const userMap = {};
-    users.forEach(u => { userMap[u._id.toString()] = u.name; });
+  // Fetch volunteers info
+  const volIds = [...new Set(assignments.flatMap(a => a.volunteers_assigned))];
+  const users = await db.collection('users').find({ _id: { $in: volIds } }).project({ name: 1 }).toArray();
+  const userMap = {};
+  users.forEach(u => { userMap[u._id.toString()] = u.name; });
 
-    return {
-      ...village,
-      assignedVolunteers: vols.map(v => ({
-        id: v._id,
-        name: userMap[v.userId?.toString()] || 'Unknown',
-        tier: v.tier,
-        matchScore: v.matchScore,
-        skills: v.skills
-      }))
-    };
+  const volsScores = await db.collection('volunteerscores').find({ volunteerId: { $in: volIds } }).toArray();
+  const scoreMap = {};
+  volsScores.forEach(s => { scoreMap[s.volunteerId.toString()] = s; });
+
+  const deploymentPlan = assignments.map(a => ({
+    villageId: a.village_id,
+    villageName: a.village_name,
+    primaryDomain: a.domain,
+    vulnerabilityClass: a.domain_score > 75 ? 'CRITICAL' : a.domain_score > 65 ? 'HIGH' : 'MEDIUM',
+    overallVulnerabilityScore: a.domain_score,
+    assignedVolunteers: a.volunteers_assigned.map(vid => {
+      const vidStr = vid.toString();
+      const score = scoreMap[vidStr];
+      return {
+        id: vidStr,
+        name: userMap[vidStr] || 'Unknown',
+        tier: score?.tier || 'D',
+        matchScore: score?.totalScore || 0,
+        skills: score?.skills || []
+      }
+    })
   }));
 
   sendSuccess(res, 200, 'Deployment plan computed', deploymentPlan);
@@ -324,4 +366,113 @@ const recompute = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { getStats, getVillageRankings, getVillageDetail, getRankedVolunteers, getSmartMatch, getDeploymentPlan, recompute };
+// ─── POST /api/ml/campaign/:id/run-matching ─────────────────────────────────
+const runMatching = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const db = mongoose.connection.db;
+  const campaignId = new mongoose.Types.ObjectId(id);
+
+  // 1. Fetch Campaign
+  const campaign = await db.collection('campaigns').findOne({ _id: campaignId });
+  if (!campaign) return res.status(404).json({ success: false, message: 'Campaign not found' });
+
+  // 2. Fetch registered volunteers
+  const registered = await db.collection('campaignregistrations').find({ campaignId, status: 'registered' }).toArray();
+  if (!registered.length) return res.status(400).json({ success: false, message: 'No registered volunteers found' });
+
+  const volIds = registered.map(r => r.volunteerId);
+  const scores = await db.collection('volunteerscores').find({ volunteerId: { $in: volIds } }).sort({ totalScore: -1 }).toArray();
+
+  // Tier rotation
+  const tierA = scores.filter(s => s.tier === 'A');
+  const tierB = scores.filter(s => s.tier === 'B' || s.tier === 'C');
+  const tierC = scores.filter(s => s.tier === 'D');
+
+  const selected = [];
+  selected.push(...tierA.slice(0, 25));
+  selected.push(...tierB.slice(0, 50));
+  selected.push(...tierC.slice(0, 25));
+
+  if (selected.length < 100) {
+    const remaining = scores.filter(s => !selected.includes(s));
+    selected.push(...remaining.slice(0, 100 - selected.length));
+  }
+
+  const selectedUserIds = selected.map(s => s.volunteerId);
+
+  // 3. Assign to villages (VillageScores)
+  const vScores = await db.collection('villageScores').find({ campaignId }).sort({ overallVulnerabilityScore: -1 }).toArray();
+  if (!vScores.length) return res.status(400).json({ success: false, message: 'No village scores found for this campaign' });
+  
+  // Actually, we'll just do sequential writes
+  // a. Update matched
+  for (const s of selected) {
+    await db.collection('campaignregistrations').updateOne(
+      { campaignId, volunteerId: s.volunteerId },
+      { $set: { status: 'matched', matchScore: s.totalScore || 80, assignedVillageId: vScores[0].villageId } }
+    );
+  }
+  
+  // b. Update rejected
+  await db.collection('campaignregistrations').updateMany(
+    { campaignId, volunteerId: { $nin: selectedUserIds } },
+    { $set: { status: 'rejected' } }
+  );
+
+  // c. Create Assignments
+  await db.collection('assignments').deleteMany({ campaignId });
+  const chunk = Math.ceil(selected.length / vScores.length);
+  const newAssignments = [];
+  
+  for (let i = 0; i < vScores.length; i++) {
+    const chunkVols = selected.slice(i * chunk, (i + 1) * chunk);
+    if (!chunkVols.length) continue;
+    
+    newAssignments.push({
+      campaignId,
+      village_id: vScores[i].villageId,
+      village_name: vScores[i].villageName,
+      domain: campaign.category,
+      priority_rank: i + 1,
+      domain_score: vScores[i].overallVulnerabilityScore,
+      funds_assigned: Math.floor((campaign.targetAmount || 0) / vScores.length),
+      volunteers_needed: chunkVols.length,
+      volunteers_assigned: chunkVols.map(v => v.volunteerId),
+      group_id: `GRP_${vScores[i].villageId}`,
+      group_rank_spread: chunkVols.map(v => v.totalScore),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+    
+    // Update proper assignedVillageId
+    for (const cv of chunkVols) {
+      await db.collection('campaignregistrations').updateOne(
+        { campaignId, volunteerId: cv.volunteerId },
+        { $set: { assignedVillageId: vScores[i].villageId } }
+      );
+    }
+  }
+  
+  if (newAssignments.length) {
+    await db.collection('assignments').insertMany(newAssignments);
+  }
+
+  // d. addToSet Campaign.volunteers
+  await db.collection('campaigns').updateOne(
+    { _id: campaignId },
+    { $addToSet: { volunteers: { $each: selectedUserIds } } }
+  );
+
+  // e. Report
+  await db.collection('campaignreports').insertOne({
+    campaignId,
+    ngoId: campaign.ngoId,
+    generatedAt: new Date(),
+    matchedCount: selected.length,
+    villagesAssigned: newAssignments.length
+  });
+
+  res.json({ success: true, message: 'Matching successful', matchedCount: selected.length });
+});
+
+module.exports = { getStats, getVillageRankings, getVillageDetail, getRankedVolunteers, getSmartMatch, getDeploymentPlan, recompute, runMatching };
