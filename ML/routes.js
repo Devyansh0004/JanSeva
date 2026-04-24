@@ -1,5 +1,5 @@
-const express = require('express');
-const multer = require('multer');
+const express = require('../Backend/node_modules/express');
+const multer = require('../Backend/node_modules/multer');
 const router = express.Router();
 const mlController = require('./controllers/ml.controller');
 const surveyController = require('./controllers/survey.controller');
